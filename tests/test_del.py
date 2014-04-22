@@ -38,6 +38,7 @@ def setup():
 def teardown():
     for r in all_redis:
         r.stop()
+    assert(nc._alive())
     nc.stop()
 
 ######################################################
@@ -60,9 +61,9 @@ def test_multi_delete_on_readonly():
 
     conn = redis.Redis('127.0.0.5', 4100)
 
-    assert_fail('READONLY', conn.delete, 'key-1')           # got "READONLY You can't write against a read only slave"
+    assert_fail('READONLY|Invalid', conn.delete, 'key-1')           # got "READONLY You can't write against a read only slave"
     assert_equal(0, conn.delete('key-2'))
-    assert_fail('READONLY', conn.delete, 'key-3')
+    assert_fail('READONLY|Invalid', conn.delete, 'key-3')
 
     keys = ['key-1', 'key-2', 'kkk-3']
     assert_fail('Invalid argument', conn.delete, *keys)     # got "Invalid argument"
@@ -72,19 +73,19 @@ def test_multi_delete_on_backend_down():
     all_redis[0].stop()
     conn = redis.Redis('127.0.0.5', 4100)
 
-    assert_fail('Connection refused', conn.delete, 'key-1')
+    assert_fail('Connection refused|reset by peer', conn.delete, 'key-1')
     assert_equal(None, conn.get('key-2'))
 
     keys = ['key-1', 'key-2', 'kkk-3']
-    assert_fail('Connection refused', conn.delete, *keys)
+    assert_fail('Connection refused|reset by peer', conn.delete, *keys)
 
     #all backend down
     all_redis[1].stop()
     conn = redis.Redis('127.0.0.5', 4100)
 
-    assert_fail('Connection refused', conn.delete, 'key-1')
-    assert_fail('Connection refused', conn.delete, 'key-2')
+    assert_fail('Connection refused|reset by peer', conn.delete, 'key-1')
+    assert_fail('Connection refused|reset by peer', conn.delete, 'key-2')
 
     keys = ['key-1', 'key-2', 'kkk-3']
-    assert_fail('Connection refused', conn.delete, *keys)
+    assert_fail('Connection refused|reset by peer', conn.delete, *keys)
 

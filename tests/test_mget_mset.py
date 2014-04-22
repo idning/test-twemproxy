@@ -38,6 +38,7 @@ def setup():
 def teardown():
     for r in all_redis:
         r.stop()
+    assert(nc._alive())
     nc.stop()
 
 ######################################################
@@ -104,19 +105,19 @@ def test_mget_on_backend_down():
     all_redis[0].stop()
     conn = redis.Redis(nc.host(), nc.port())
 
-    assert_fail('Connection refused', conn.mget, 'key-1')
+    assert_fail('Connection refused|reset by peer', conn.mget, 'key-1')
     assert_equal(None, conn.get('key-2'))
 
     keys = ['key-1', 'key-2', 'kkk-3']
-    assert_fail('Connection refused', conn.mget, *keys)
+    assert_fail('Connection refused|reset by peer', conn.mget, *keys)
 
     #all backend down
     all_redis[1].stop()
     conn = redis.Redis('127.0.0.5', 4100)
 
-    assert_fail('Connection refused', conn.mget, 'key-1')
-    assert_fail('Connection refused', conn.mget, 'key-2')
+    assert_fail('Connection refused|reset by peer', conn.mget, 'key-1')
+    assert_fail('Connection refused|reset by peer', conn.mget, 'key-2')
 
     keys = ['key-1', 'key-2', 'kkk-3']
-    assert_fail('Connection refused', conn.mget, *keys)
+    assert_fail('Connection refused|reset by peer', conn.mget, *keys)
 
