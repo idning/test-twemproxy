@@ -42,77 +42,81 @@ def teardown():
 
 ######################################################
 
-def test_mget_mset(cnt=10):
+default_kv = {'kkk-%s' % i :'vvv-%s' % i for i in range(10)}
+def test_mget_mset(kv=default_kv):
     conn = redis.Redis(nc.host(), nc.port())
 
     def insert_by_pipeline():
         pipe = conn.pipeline(transaction=False)
-        for i in range(cnt):
-            pipe.set('kkk-%s'%i, 'vvv-%s'%i)
+        for k, v in kv.items():
+            pipe.set(k, v)
         pipe.execute()
 
     def insert_by_mset():
-        kv = {'kkk-%s' % i :'vvv-%s' % i for i in range(cnt)}
         ret = conn.mset(**kv)
 
     try:
         insert_by_mset() #only the mget-imporve branch support this
     except:
         insert_by_pipeline()
-    keys = ['kkk-%s' % i for i in range(cnt)]
+
+    keys = kv.keys()
 
     #mget to check
     vals = conn.mget(keys)
-    for i in range(cnt):
-        assert('vvv-%s'%i == vals[i])
+    for i, k in enumerate(keys):
+        assert(kv[k] == vals[i])
 
     #del
-    assert (cnt == conn.delete(*keys) )
+    assert (len(keys) == conn.delete(*keys) )
 
     #mget again
     vals = conn.mget(keys)
-    for i in range(cnt):
+
+    for i, k in enumerate(keys):
         assert(None == vals[i])
 
 def test_mget_mset_large():
-    for i in range(1, 10000, 171):
-        test_mget_mset(i)
+    for cnt in range(1, 1000, 171):
+        kv = {'kkk-%s' % i :'vvv-%s' % i for i in range(cnt)}
+        test_mget_mset(kv)
 
-
-def test_mget_binary_value(cnt=5):
-    conn = redis.Redis(nc.host(), nc.port())
+def test_mget_special_key(cnt=5):
+    #key length = 512-48
     kv = {}
     for i in range(cnt):
-        kv['kkx-%s' % i] = os.urandom(1024*1024*8)
+        k = 'kkk-%s' % i
+        k = k + 'x'*(512-48-len(k))
+        kv[k] = 'vvv'
 
-    ret = conn.mset(**kv)
+    test_mget_mset(kv)
 
-    keys = ['kkx-%s' % i for i in range(cnt)]
-
-    #mget to check
-    vals = conn.mget(keys)
+def test_mget_binary_value(cnt=5):
+    kv = {}
     for i in range(cnt):
-        key = 'kkx-%s' % i
-        assert(kv[key] == vals[i])
+        kv['kkk-%s' % i] = os.urandom(1024*1024*16+1024)
+    for i in range(cnt):
+        kv['kkk2-%s' % i] = ''
+    test_mget_mset(kv)
 
-def _test_mget_on_backend_down():
+def test_mget_on_backend_down():
     #one backend down
     all_redis[0].stop()
     conn = redis.Redis(nc.host(), nc.port())
 
-    assert_fail('Connection refused', conn.delete, 'key-1')
+    assert_fail('Connection refused', conn.mget, 'key-1')
     assert_equal(None, conn.get('key-2'))
 
     keys = ['key-1', 'key-2', 'kkk-3']
-    assert_fail('Connection refused', conn.delete, *keys)
+    assert_fail('Connection refused', conn.mget, *keys)
 
     #all backend down
     all_redis[1].stop()
     conn = redis.Redis('127.0.0.5', 4100)
 
-    assert_fail('Connection refused', conn.delete, 'key-1')
-    assert_fail('Connection refused', conn.delete, 'key-2')
+    assert_fail('Connection refused', conn.mget, 'key-1')
+    assert_fail('Connection refused', conn.mget, 'key-2')
 
     keys = ['key-1', 'key-2', 'kkk-3']
-    assert_fail('Connection refused', conn.delete, *keys)
+    assert_fail('Connection refused', conn.mget, *keys)
 
