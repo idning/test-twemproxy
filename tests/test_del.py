@@ -14,6 +14,7 @@ import conf
 from server_modules import *
 from utils import *
 
+######################################################
 
 CLUSTER_NAME = 'ttt'
 
@@ -22,14 +23,37 @@ all_redis = [
         RedisServer('127.0.0.5', 2101, '/tmp/r/redis-2101/', CLUSTER_NAME, 'redis-2101'),
     ]
 
+nc = NutCracker('127.0.0.5', 4100, '/tmp/r/nutcracker-4100/', CLUSTER_NAME, all_redis)
+
 def setup():
     for r in all_redis:
         r.deploy()
+        r.stop()
         r.start()
 
-    nc = NutCracker('127.0.0.5', 4100, '/tmp/r/nutcracker-4100/', CLUSTER_NAME, all_redis)
     nc.deploy()
+    nc.stop()
     nc.start()
+
+def teardown():
+    for r in all_redis:
+        r.stop()
+    nc.stop()
+
+######################################################
+
+def test_multi_delete_normal():
+    conn = redis.Redis('127.0.0.5', 4100)
+    for i in range(100):
+        conn.set('key-%s'%i, 'val-%s'%i)
+    for i in range(100):
+        assert_equal('val-%s'%i, conn.get('key-%s'%i) )
+
+    keys = ['key-%s'%i for i in range(100)]
+    assert_equal(100, conn.delete(*keys))
+
+    for i in range(100):
+        assert_equal(None, conn.get('key-%s'%i) )
 
 def test_multi_delete_on_readonly():
     all_redis[0].slaveof(all_redis[1].args['host'], all_redis[1].args['port'])
@@ -42,3 +66,25 @@ def test_multi_delete_on_readonly():
 
     keys = ['key-1', 'key-2', 'kkk-3']
     assert_fail('Invalid argument', conn.delete, *keys)     # got "Invalid argument"
+
+def test_multi_delete_on_backend_down():
+    #one backend down
+    all_redis[0].stop()
+    conn = redis.Redis('127.0.0.5', 4100)
+
+    assert_fail('Connection refused', conn.delete, 'key-1')
+    assert_equal(None, conn.get('key-2'))
+
+    keys = ['key-1', 'key-2', 'kkk-3']
+    assert_fail('Connection refused', conn.delete, *keys)
+
+    #all backend down
+    all_redis[1].stop()
+    conn = redis.Redis('127.0.0.5', 4100)
+
+    assert_fail('Connection refused', conn.delete, 'key-1')
+    assert_fail('Connection refused', conn.delete, 'key-2')
+
+    keys = ['key-1', 'key-2', 'kkk-3']
+    assert_fail('Connection refused', conn.delete, *keys)
+

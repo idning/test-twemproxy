@@ -38,7 +38,7 @@ class Base:
         self._gen_control_script()
 
     def _gen_control_script(self):
-        content = file('conf/control.sh').read()
+        content = file(os.path.join(WORKDIR, 'conf/control.sh')).read()
         content = TT(content, self.args)
 
         control_filename = TT('${path}/${name}_control', self.args)
@@ -133,7 +133,9 @@ class RedisServer(Base):
         return strstr(self._ping(), 'PONG')
 
     def _gen_conf(self):
-        content = file('conf/redis.conf').read()
+
+        content = file(os.path.join(WORKDIR, 'conf/redis.conf')).read()
+        #content = file('conf/redis.conf').read()
         return TT(content, self.args)
 
     def _pre_deploy(self):
@@ -235,6 +237,11 @@ $cluster_name:
         self.deploy()
         self.start()
         logging.info('proxy %s:%s is updated' % (self.args['host'], self.args['port']))
+
+    def host(self):
+        return self.args['host']
+    def port(self):
+        return self.args['port']
 
 
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4

@@ -1,14 +1,14 @@
-test-twemproxy
-##############
+Python testing facilities for twemproxy
 
-dependency:
+usage
+=====
 
-- redis-py
-- nosetests
+1. install dependency::
 
-usage:
+    pip install redis
+    pip install nose
 
-1. copy binarys to _binaries/::
+2. copy binarys to _binaries/::
 
     _binaries/
     |-- nutcracker
@@ -19,6 +19,19 @@ usage:
     |-- redis-sentinel
     `-- redis-server
 
-2. run::
+3. run::
 
-    nosetests
+    $ nosetests -v
+    test_del.test_multi_delete_on_readonly ... ok
+    test_mget.test_mget ... ok
+
+    ----------------------------------------------------------------------
+    Ran 2 tests in 4.483s
+
+    OK
+
+4. add A case::
+
+    cp tests/test_del.py tests/test_xxx.py
+    vim tests/test_xxx.py
+

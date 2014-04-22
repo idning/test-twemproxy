@@ -22,6 +22,8 @@ from argparse import RawTextHelpFormatter
 
 from string import Template
 
+PWD = os.path.dirname(os.path.realpath(__file__))
+WORKDIR = os.path.join(PWD,  '../')
 
 def strstr(s1, s2):
     return s1.find(s2) != -1
@@ -86,7 +88,8 @@ def assert_fail(err_response, callable, *args, **kwargs):
         callable(*args, **kwargs)
         assert False, 'assert_fail %s but nothing raise' % (err_response)
     except Exception as e:
-        assert strstr(str(e), err_response)
+        #assert strstr(str(e), err_response), 'assert "%s" but got "%s"' % (err_response, e)
+        assert re.search(err_response, str(e)), 'assert "%s" but got "%s"' % (err_response, e)
 
 if __name__ == "__main__":
     test_nothrow()

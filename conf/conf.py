@@ -1,8 +1,14 @@
 #coding: utf-8
 
+import os
+import sys
+
+PWD = os.path.dirname(os.path.realpath(__file__))
+WORKDIR = os.path.join(PWD,  '../')
+
 BINARYS = {
-    'REDIS_SERVER_BINS'   : '_binaries/redis-*',
-    'REDIS_CLI'           : '_binaries/redis-cli',
-    'NUTCRACKER_BINS'     : '_binaries/nutcracker',
+    'REDIS_SERVER_BINS'   : os.path.join(WORKDIR, '_binaries/redis-*'),
+    'REDIS_CLI'           : os.path.join(WORKDIR, '_binaries/redis-cli'),
+    'NUTCRACKER_BINS'     : os.path.join(WORKDIR, '_binaries/nutcracker'),
 }
 
