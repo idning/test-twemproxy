@@ -23,7 +23,12 @@ all_redis = [
         RedisServer('127.0.0.5', 2101, '/tmp/r/redis-2101', CLUSTER_NAME, 'redis-2101'),
     ]
 
-nc = NutCracker('127.0.0.5', 4100, '/tmp/r/nutcracker-4100', CLUSTER_NAME, all_redis)
+if 'NC_VERBOSE' in os.environ:
+    nc_verbose = os.environ['NC_VERBOSE']
+else:
+    nc_verbose = 4
+
+nc = NutCracker('127.0.0.5', 4100, '/tmp/r/nutcracker-4100', CLUSTER_NAME, all_redis, verbose=nc_verbose)
 
 def setup():
     for r in all_redis:
@@ -56,10 +61,11 @@ def test_mget_mset(kv=default_kv):
     def insert_by_mset():
         ret = conn.mset(**kv)
 
-    try:
-        insert_by_mset() #only the mget-imporve branch support this
-    except:
-        insert_by_pipeline()
+    insert_by_mset() #only the mget-imporve branch support this
+    #try:
+        #insert_by_mset() #only the mget-imporve branch support this
+    #except:
+        #insert_by_pipeline()
 
     keys = kv.keys()
 
@@ -87,17 +93,9 @@ def test_mget_special_key(cnt=5):
     kv = {}
     for i in range(cnt):
         k = 'kkk-%s' % i
-        k = k + 'x'*(512-48-len(k))
+        k = k + 'x'*(512-48-1-len(k))
         kv[k] = 'vvv'
 
-    test_mget_mset(kv)
-
-def test_mget_binary_value(cnt=5):
-    kv = {}
-    for i in range(cnt):
-        kv['kkk-%s' % i] = os.urandom(1024*1024*16+1024)
-    for i in range(cnt):
-        kv['kkk2-%s' % i] = ''
     test_mget_mset(kv)
 
 def test_mget_on_backend_down():

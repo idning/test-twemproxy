@@ -172,18 +172,20 @@ class RedisServer(Base):
 
 
 class NutCracker(Base):
-    def __init__(self, host, port, path, cluster_name, masters):
+    def __init__(self, host, port, path, cluster_name, masters, mbuf=512, verbose=4):
         Base.__init__(self, 'nutcracker', host, port, path)
 
         self.masters = masters
 
+        self.args['mbuf']        = mbuf
+        self.args['verbose']     = verbose
         self.args['conf']        = TT('$path/conf/nutcracker.conf', self.args)
         self.args['pidfile']     = TT('$path/log/nutcracker.pid', self.args)
         self.args['logfile']     = TT('$path/log/nutcracker.log', self.args)
         self.args['status_port'] = self.args['port'] + 1000
 
-        self.args['startcmd']    = TT('bin/nutcracker -d -c $conf -o $logfile -p $pidfile -s $status_port -v 4', self.args)
-        self.args['runcmd']      = self.args['startcmd']
+        self.args['startcmd']    = TT('bin/nutcracker -d -c $conf -o $logfile -p $pidfile -s $status_port -v $verbose -m $mbuf', self.args)
+        self.args['runcmd']    = TT('bin/nutcracker -d -c $conf -o $logfile -p $pidfile -s $status_port', self.args)
 
         self.args['cluster_name']= cluster_name
 

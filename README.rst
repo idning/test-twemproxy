@@ -35,3 +35,9 @@ usage
     cp tests/test_del.py tests/test_xxx.py
     vim tests/test_xxx.py
 
+
+debug
+=====
+
+export NC_VERBOSE=9
+

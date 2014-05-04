@@ -25,6 +25,9 @@ from string import Template
 PWD = os.path.dirname(os.path.realpath(__file__))
 WORKDIR = os.path.join(PWD,  '../')
 
+logging.basicConfig(filename='t.log', format="%(asctime)-15s [%(threadName)s] [%(levelname)s] %(message)s", level=logging.DEBUG)
+logging.info("test running!!!!!!")
+
 def strstr(s1, s2):
     return s1.find(s2) != -1
 

@@ -1,3 +1,4 @@
 _binaries/*
 *.pyc
 *.out
+*.log

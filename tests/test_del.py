@@ -23,7 +23,12 @@ all_redis = [
         RedisServer('127.0.0.5', 2101, '/tmp/r/redis-2101/', CLUSTER_NAME, 'redis-2101'),
     ]
 
-nc = NutCracker('127.0.0.5', 4100, '/tmp/r/nutcracker-4100/', CLUSTER_NAME, all_redis)
+if 'NC_VERBOSE' in os.environ:
+    nc_verbose = os.environ['NC_VERBOSE']
+else:
+    nc_verbose = 4
+
+nc = NutCracker('127.0.0.5', 4100, '/tmp/r/nutcracker-4100', CLUSTER_NAME, all_redis, verbose=nc_verbose)
 
 def setup():
     for r in all_redis:
