@@ -168,8 +168,7 @@ class RedisServer(Base):
         args['cmd'] = cmd
         cmd = TT('$REDIS_CLI -h $host -p $port $cmd', args)
         logging.info('%s %s' % (self, cmd))
-        print self._run(cmd)
-
+        return self._run(cmd)
 
 class NutCracker(Base):
     def __init__(self, host, port, path, cluster_name, masters, mbuf=512, verbose=4):

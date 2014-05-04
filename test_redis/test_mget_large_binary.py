@@ -28,7 +28,7 @@ if 'NC_VERBOSE' in os.environ:
 else:
     nc_verbose = 4
 
-nc = NutCracker('127.0.0.5', 4100, '/tmp/r/nutcracker-4100', CLUSTER_NAME, all_redis, verbose=nc_verbose, mbuf=16*1024)
+nc = NutCracker('127.0.0.5', 4100, '/tmp/r/nutcracker-4100', CLUSTER_NAME, all_redis, verbose=nc_verbose, mbuf=64*1024)
 
 def setup():
     for r in all_redis:
