@@ -98,6 +98,16 @@ def test_mget_special_key(cnt=5):
 
     test_mget_mset(kv)
 
+def test_mget_special_key_2(cnt=5):
+    #key length = 512-48
+    kv = {}
+    for i in range(cnt):
+        k = 'kkk-%s' % i
+        k = k + 'x'*(512-48-2-len(k))
+        kv[k] = 'vvv'*9
+
+    test_mget_mset(kv)
+
 def test_mget_on_backend_down():
     #one backend down
     all_redis[0].stop()
