@@ -170,8 +170,27 @@ class RedisServer(Base):
         logging.info('%s %s' % (self, cmd))
         return self._run(cmd)
 
+class Memcached(Base):
+    def __init__(self, host, port, path, cluster_name, server_name):
+        Base.__init__(self, 'memcached', host, port, path)
+
+        self.args['startcmd']     = TT('bin/memcached -d -p $port', self.args)
+        self.args['runcmd']       = self.args['startcmd']
+
+        self.args['cluster_name'] = cluster_name
+        self.args['server_name']  = server_name
+
+    def _alive(self):
+        cmd = TT('echo "stats" | socat - TCP:$host:$port', self.args)
+        ret = self._run(cmd)
+        return strstr(ret, 'END')
+
+    def _pre_deploy(self):
+        self.args['BINS'] = conf.BINARYS['MEMCACHED_BINS']
+        self._run(TT('cp $BINS $path/bin/', self.args))
+
 class NutCracker(Base):
-    def __init__(self, host, port, path, cluster_name, masters, mbuf=512, verbose=4):
+    def __init__(self, host, port, path, cluster_name, masters, mbuf=512, verbose=4, is_redis=True):
         Base.__init__(self, 'nutcracker', host, port, path)
 
         self.masters = masters
@@ -187,6 +206,7 @@ class NutCracker(Base):
         self.args['runcmd']    = TT('bin/nutcracker -d -c $conf -o $logfile -p $pidfile -s $status_port', self.args)
 
         self.args['cluster_name']= cluster_name
+        self.args['is_redis']= str(is_redis).lower()
 
     def _alive(self):
         return self._info_dict()
@@ -204,7 +224,7 @@ $cluster_name:
   distribution: modula
   preconnect: true
   auto_eject_hosts: false
-  redis: true
+  redis: $is_redis
   backlog: 512
   timeout: 400
   client_connections: 0

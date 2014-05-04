@@ -6,6 +6,7 @@ usage
 1. install dependency::
 
     pip install redis
+    pip install python-memcache
     pip install nose
 
 2. copy binarys to _binaries/::
@@ -17,7 +18,8 @@ usage
     |-- redis-check-dump
     |-- redis-cli
     |-- redis-sentinel
-    `-- redis-server
+    |-- redis-server
+    |-- memcached
 
 3. run::
 
