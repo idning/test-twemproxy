@@ -55,27 +55,23 @@ def test_basic():
     conn.set('k', 'v')
     assert('v' == conn.get('k'))
 
+    conn.set("key", "1")
+    for i in range(10):
+        conn.incr("key")
+        assert(str(i+2) == conn.get('key'))
+
+    conn.delete("key")
+    assert(None == conn.get('key'))
+
 default_kv = {'kkk-%s' % i :'vvv-%s' % i for i in range(10)}
 def test_mget_mset(kv=default_kv):
     conn = memcache.Client(['127.0.0.1:4100'])
     conn.set_multi(kv)
     keys = sorted(kv.keys())
-    #for k, v in kv.items():
-        #assert(v == conn.get(k))
-
-    #r = conn.get_multi(keys)
-    #print len(r), r
-
-    #r = conn.gets_multi(keys)
-    #print len(r), r
-    #assert(r == kv)
 
     assert(conn.get_multi(keys) == kv)
-
-    #r = conn.gets_multi(keys)
-    #print len(r), r
-    #assert(r == kv)
     assert(conn.gets_multi(keys) == kv)
+
     #del
     conn.delete_multi(keys)
     #mget again
@@ -87,7 +83,6 @@ def test_mget_mset_large():
         print 'test', cnt
         kv = {'kkk-%s' % i :'vvv-%s' % i for i in range(cnt)}
         test_mget_mset(kv)
-
 
 def test_mget_mset_key_not_exists(kv=default_kv):
     conn = memcache.Client(['127.0.0.1:4100'])
@@ -112,3 +107,4 @@ def test_mget_mset_key_not_exists(kv=default_kv):
     #mget again
     vals = conn.get_multi(keys)
     assert({} == vals)
+
