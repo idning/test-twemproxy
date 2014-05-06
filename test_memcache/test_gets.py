@@ -51,7 +51,64 @@ def teardown():
 ######################################################
 
 def test_basic():
-    mc = memcache.Client(['127.0.0.1:4100'])
-    mc.set('k', 'v')
-    assert('v' == mc.get('k'))
+    conn = memcache.Client(['127.0.0.1:4100'])
+    conn.set('k', 'v')
+    assert('v' == conn.get('k'))
 
+default_kv = {'kkk-%s' % i :'vvv-%s' % i for i in range(10)}
+def test_mget_mset(kv=default_kv):
+    conn = memcache.Client(['127.0.0.1:4100'])
+    conn.set_multi(kv)
+    keys = sorted(kv.keys())
+    #for k, v in kv.items():
+        #assert(v == conn.get(k))
+
+    #r = conn.get_multi(keys)
+    #print len(r), r
+
+    #r = conn.gets_multi(keys)
+    #print len(r), r
+    #assert(r == kv)
+
+    assert(conn.get_multi(keys) == kv)
+
+    #r = conn.gets_multi(keys)
+    #print len(r), r
+    #assert(r == kv)
+    assert(conn.gets_multi(keys) == kv)
+    #del
+    conn.delete_multi(keys)
+    #mget again
+    vals = conn.get_multi(keys)
+    assert({} == vals)
+
+def test_mget_mset_large():
+    for cnt in range(179, 10000, 179):
+        print 'test', cnt
+        kv = {'kkk-%s' % i :'vvv-%s' % i for i in range(cnt)}
+        test_mget_mset(kv)
+
+
+def test_mget_mset_key_not_exists(kv=default_kv):
+    conn = memcache.Client(['127.0.0.1:4100'])
+    conn.set_multi(kv)
+
+    keys = kv.keys()
+    keys2 = ['x-'+k for k in keys]
+    keys = keys + keys2
+    random.shuffle(keys)
+
+    for i in range(2):
+        #mget to check
+        vals = conn.get_multi(keys)
+        for i, k in enumerate(keys):
+            if k in kv:
+                assert(kv[k] == vals[k])
+            else:
+                assert(k not in vals)
+
+    #del
+    conn.delete_multi(keys)
+    #mget again
+    vals = conn.get_multi(keys)
+    assert({} == vals)

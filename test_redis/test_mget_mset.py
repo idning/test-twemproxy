@@ -83,8 +83,47 @@ def test_mget_mset(kv=default_kv):
     for i, k in enumerate(keys):
         assert(None == vals[i])
 
+def test_mget_mset_on_key_not_exist(kv=default_kv):
+    conn = redis.Redis(nc.host(), nc.port())
+
+    def insert_by_pipeline():
+        pipe = conn.pipeline(transaction=False)
+        for k, v in kv.items():
+            pipe.set(k, v)
+        pipe.execute()
+
+    def insert_by_mset():
+        ret = conn.mset(**kv)
+
+    try:
+        insert_by_mset() #only the mget-imporve branch support this
+    except:
+        insert_by_pipeline()
+
+    keys = kv.keys()
+    keys2 = ['x-'+k for k in keys]
+    keys = keys + keys2
+    random.shuffle(keys)
+
+    #mget to check
+    vals = conn.mget(keys)
+    for i, k in enumerate(keys):
+        if k in kv:
+            assert(kv[k] == vals[i])
+        else:
+            assert(vals[i] == None)
+
+    #del
+    assert (len(kv) == conn.delete(*keys) )
+
+    #mget again
+    vals = conn.mget(keys)
+
+    for i, k in enumerate(keys):
+        assert(None == vals[i])
+
 def test_mget_mset_large():
-    for cnt in range(1, 1000, 171):
+    for cnt in range(171, 10000, 171):
         kv = {'kkk-%s' % i :'vvv-%s' % i for i in range(cnt)}
         test_mget_mset(kv)
 
