@@ -28,6 +28,11 @@ WORKDIR = os.path.join(PWD,  '../')
 logging.basicConfig(filename='t.log', format="%(asctime)-15s [%(threadName)s] [%(levelname)s] %(message)s", level=logging.DEBUG)
 logging.info("test running!!!!!!")
 
+def getenv(key, default):
+    if key in os.environ:
+        return os.environ[key]
+    return default
+
 def strstr(s1, s2):
     return s1.find(s2) != -1
 
