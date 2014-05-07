@@ -23,12 +23,11 @@ all_redis = [
         RedisServer('127.0.0.5', 2101, '/tmp/r/redis-2101', CLUSTER_NAME, 'redis-2101'),
     ]
 
-if 'NC_VERBOSE' in os.environ:
-    nc_verbose = os.environ['NC_VERBOSE']
-else:
-    nc_verbose = 4
+nc_verbose = int(getenv('NC_VERBOSE', 4))
+mbuf = int(getenv('NC_MBUF', 512))
+large = int(getenv('NC_LARGE', 1000))
 
-nc = NutCracker('127.0.0.5', 4100, '/tmp/r/nutcracker-4100', CLUSTER_NAME, all_redis, verbose=nc_verbose)
+nc = NutCracker('127.0.0.5', 4100, '/tmp/r/nutcracker-4100', CLUSTER_NAME, all_redis, mbuf=mbuf, verbose=nc_verbose)
 
 def setup():
     for r in all_redis:
@@ -83,8 +82,47 @@ def test_mget_mset(kv=default_kv):
     for i, k in enumerate(keys):
         assert(None == vals[i])
 
+def test_mget_mset_on_key_not_exist(kv=default_kv):
+    conn = redis.Redis(nc.host(), nc.port())
+
+    def insert_by_pipeline():
+        pipe = conn.pipeline(transaction=False)
+        for k, v in kv.items():
+            pipe.set(k, v)
+        pipe.execute()
+
+    def insert_by_mset():
+        ret = conn.mset(**kv)
+
+    try:
+        insert_by_mset() #only the mget-imporve branch support this
+    except:
+        insert_by_pipeline()
+
+    keys = kv.keys()
+    keys2 = ['x-'+k for k in keys]
+    keys = keys + keys2
+    random.shuffle(keys)
+
+    #mget to check
+    vals = conn.mget(keys)
+    for i, k in enumerate(keys):
+        if k in kv:
+            assert(kv[k] == vals[i])
+        else:
+            assert(vals[i] == None)
+
+    #del
+    assert (len(kv) == conn.delete(*keys) )
+
+    #mget again
+    vals = conn.mget(keys)
+
+    for i, k in enumerate(keys):
+        assert(None == vals[i])
+
 def test_mget_mset_large():
-    for cnt in range(1, 1000, 171):
+    for cnt in range(171, large, 171):
         kv = {'kkk-%s' % i :'vvv-%s' % i for i in range(cnt)}
         test_mget_mset(kv)
 

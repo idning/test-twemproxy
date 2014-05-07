@@ -5,9 +5,10 @@ usage
 
 1. install dependency::
 
-    pip install redis
-    pip install python-memcache
     pip install nose
+    pip install redis
+    git clone https://github.com/idning/python-memcached
+    cd python-memcached && python setup.py install
 
 2. copy binarys to _binaries/::
 
