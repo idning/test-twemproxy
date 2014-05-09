@@ -60,11 +60,11 @@ def test_mget_mset(kv=default_kv):
     def insert_by_mset():
         ret = conn.mset(**kv)
 
-    insert_by_mset() #only the mget-imporve branch support this
-    #try:
-        #insert_by_mset() #only the mget-imporve branch support this
-    #except:
-        #insert_by_pipeline()
+    #insert_by_mset() #only the mget-imporve branch support this
+    try:
+        insert_by_mset() #only the mget-imporve branch support this
+    except:
+        insert_by_pipeline()
 
     keys = kv.keys()
 
@@ -146,6 +146,29 @@ def test_mget_special_key_2(cnt=5):
 
     test_mget_mset(kv)
 
+def test_fuzz():
+    conn = redis.Redis(nc.host(),nc.port())
+    #not supported
+    assert_fail('Socket closed', conn.msetnx, **default_kv)
+
+def test_nc_stats():
+    print nc._info_dict()
+    time.sleep(1)
+    conn = redis.Redis(nc.host(),nc.port())
+
+    kv = default_kv
+    for k, v in kv.items():
+        print conn.set(k, v)
+        print conn.get(k)
+
+    #keys = kv.keys()
+    #conn.mget(keys)
+
+    redis.Redis(nc.host(),nc.port()).get('kkkkkkkkkk')
+    for i in range(3):
+        print nc._info_dict()
+        time.sleep(1)
+
 def test_mget_on_backend_down():
     #one backend down
     all_redis[0].stop()
@@ -167,3 +190,5 @@ def test_mget_on_backend_down():
     keys = ['key-1', 'key-2', 'kkk-3']
     assert_fail('Connection refused|reset by peer', conn.mget, *keys)
 
+    for r in all_redis:
+        r.start()
