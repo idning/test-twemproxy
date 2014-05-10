@@ -232,14 +232,15 @@ def test_mget_pipeline():
     keys = default_kv.keys()
     pipe.mget(keys)
     kv = {}
-    for i in range(10000):
+    for i in range(large):
         kv['kkk-%s' % i] = os.urandom(100)
     for k,v in kv.items():
         pipe.set(k,v)
     for k in kv.keys():
         pipe.get(k)
-    pipe.execute()
+    rst = pipe.execute()
 
+    print rst
     #check the result
     keys = default_kv.keys()
 
