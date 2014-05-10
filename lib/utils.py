@@ -25,13 +25,19 @@ from string import Template
 PWD = os.path.dirname(os.path.realpath(__file__))
 WORKDIR = os.path.join(PWD,  '../')
 
-logging.basicConfig(filename='t.log', format="%(asctime)-15s [%(threadName)s] [%(levelname)s] %(message)s", level=logging.DEBUG)
-logging.info("test running!!!!!!")
 
 def getenv(key, default):
     if key in os.environ:
         return os.environ[key]
     return default
+
+logfile = getenv('TEST_LOGFILE', 't.log')
+if logfile == '-':
+    logging.basicConfig(format="%(asctime)-15s [%(threadName)s] [%(levelname)s] %(message)s", level=logging.DEBUG)
+else:
+    logging.basicConfig(filename=logfile, format="%(asctime)-15s [%(threadName)s] [%(levelname)s] %(message)s", level=logging.DEBUG)
+
+logging.info("test running!!!!!!")
 
 def strstr(s1, s2):
     return s1.find(s2) != -1
