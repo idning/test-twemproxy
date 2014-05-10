@@ -1,54 +1,8 @@
 #!/usr/bin/env python
 #coding: utf-8
 
-import os
-import sys
-import redis
-from pprint import pprint
+from common import *
 
-PWD = os.path.dirname(os.path.realpath(__file__))
-WORKDIR = os.path.join(PWD,  '../')
-sys.path.append(os.path.join(WORKDIR, 'lib/'))
-sys.path.append(os.path.join(WORKDIR, 'conf/'))
-import conf
-
-from server_modules import *
-from utils import *
-
-######################################################
-
-CLUSTER_NAME = 'ttt'
-
-all_redis = [
-        RedisServer('127.0.0.5', 2100, '/tmp/r/redis-2100', CLUSTER_NAME, 'redis-2100'),
-        RedisServer('127.0.0.5', 2101, '/tmp/r/redis-2101', CLUSTER_NAME, 'redis-2101'),
-    ]
-
-nc_verbose = int(getenv('NC_VERBOSE', 4))
-mbuf = int(getenv('NC_MBUF', 512))
-large = int(getenv('NC_LARGE', 1000))
-
-nc = NutCracker('127.0.0.5', 4100, '/tmp/r/nutcracker-4100', CLUSTER_NAME, all_redis, mbuf=mbuf, verbose=nc_verbose)
-
-def setup():
-    for r in all_redis:
-        r.deploy()
-        r.stop()
-        r.start()
-
-    nc.deploy()
-    nc.stop()
-    nc.start()
-
-def teardown():
-    for r in all_redis:
-        r.stop()
-    assert(nc._alive())
-    nc.stop()
-
-######################################################
-
-default_kv = {'kkk-%s' % i :'vvv-%s' % i for i in range(10)}
 def test_mget_mset(kv=default_kv):
     conn = redis.Redis(nc.host(), nc.port())
 
@@ -153,6 +107,8 @@ def test_fuzz():
     assert_fail('Socket closed', conn.msetnx, **default_kv)
 
 def test_nc_stats():
+    nc.stop() #reset counters
+    nc.start()
     conn = redis.Redis(nc.host(),nc.port())
     kv = {'kkk-%s' % i :'vvv-%s' % i for i in range(10)}
     for k, v in kv.items():
