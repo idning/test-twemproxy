@@ -4,6 +4,7 @@
 import os
 import sys
 import redis
+from pprint import pprint
 
 PWD = os.path.dirname(os.path.realpath(__file__))
 WORKDIR = os.path.join(PWD,  '../')
@@ -152,22 +153,40 @@ def test_fuzz():
     assert_fail('Socket closed', conn.msetnx, **default_kv)
 
 def test_nc_stats():
-    print nc._info_dict()
-    time.sleep(1)
     conn = redis.Redis(nc.host(),nc.port())
-
-    kv = default_kv
+    kv = {'kkk-%s' % i :'vvv-%s' % i for i in range(10)}
     for k, v in kv.items():
         print conn.set(k, v)
         print conn.get(k)
 
-    #keys = kv.keys()
-    #conn.mget(keys)
-
-    redis.Redis(nc.host(),nc.port()).get('kkkkkkkkkk')
-    for i in range(3):
-        print nc._info_dict()
+    def get_stat(name):
         time.sleep(1)
+        stat = nc._info_dict()
+        #pprint(stat)
+        if name in [ 'client_connections', 'client_eof', 'client_err', 'forward_error', 'fragments', 'server_ejects']:
+            return stat[CLUSTER_NAME][name]
+
+        #sum num of each server
+        ret = 0
+        for k, v in stat[CLUSTER_NAME].items():
+            if type(v) == dict:
+                ret += v[name]
+        return ret
+
+    assert(get_stat('requests') == 20)
+    assert(get_stat('responses') == 20)
+
+    ##### mget
+    keys = kv.keys()
+    conn.mget(keys)
+
+    #for version<=0.3.0
+    #assert(get_stat('requests') == 30)
+    #assert(get_stat('responses') == 30)
+
+    #for mget-improve
+    assert(get_stat('requests') == 22)
+    assert(get_stat('responses') == 22)
 
 def test_mget_on_backend_down():
     #one backend down
@@ -192,6 +211,7 @@ def test_mget_on_backend_down():
 
     for r in all_redis:
         r.start()
+
 def test_mset_on_backend_down():
     all_redis[0].stop()
     conn = redis.Redis(nc.host(),nc.port())

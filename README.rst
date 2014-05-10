@@ -1,4 +1,4 @@
-Python testing facilities for twemproxy
+Python testing facilities for twemproxy, this test suite is based on https://github.com/idning/redis-mgr
 
 usage
 =====
@@ -39,8 +39,12 @@ usage
     vim tests/test_xxx.py
 
 
-debug
-=====
+variables
+=========
+::
 
-export NC_VERBOSE=9
+    export NC_VERBOSE=9 will start nutcracker with '-v 9'  (default:4)
+    export NC_MBUF=512  will start nutcracker whit '-m 512' (default:521)
+    export NC_LARGE=10000 will test 10000 keys for mget/mset (default:1000)
+
 

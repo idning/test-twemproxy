@@ -202,8 +202,8 @@ class NutCracker(Base):
         self.args['logfile']     = TT('$path/log/nutcracker.log', self.args)
         self.args['status_port'] = self.args['port'] + 1000
 
-        self.args['startcmd']    = TT('bin/nutcracker -d -c $conf -o $logfile -p $pidfile -s $status_port -v $verbose -m $mbuf', self.args)
-        self.args['runcmd']    = TT('bin/nutcracker -d -c $conf -o $logfile -p $pidfile -s $status_port', self.args)
+        self.args['startcmd']    = TT('bin/nutcracker -d -c $conf -o $logfile -p $pidfile -s $status_port -v $verbose -m $mbuf -i 1', self.args)
+        self.args['runcmd']      = TT('bin/nutcracker -d -c $conf -o $logfile -p $pidfile -s $status_port', self.args)
 
         self.args['cluster_name']= cluster_name
         self.args['is_redis']= str(is_redis).lower()
@@ -264,7 +264,5 @@ $cluster_name:
     def port(self):
         return self.args['port']
 
-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
-
 
