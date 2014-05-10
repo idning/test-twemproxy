@@ -7,8 +7,7 @@ usage
 
     pip install nose
     pip install redis
-    git clone https://github.com/idning/python-memcached
-    cd python-memcached && python setup.py install
+    pip install -e git://github.com/idning/python-memcached.git#egg=memcache
 
 2. copy binarys to _binaries/::
 
