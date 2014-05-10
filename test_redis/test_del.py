@@ -49,3 +49,5 @@ def test_multi_delete_on_backend_down():
     keys = ['key-1', 'key-2', 'kkk-3']
     assert_fail('Connection refused|reset by peer', conn.delete, *keys)
 
+    for r in all_redis:
+        r.start()

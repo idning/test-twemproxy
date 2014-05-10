@@ -88,11 +88,6 @@ class Base:
     def status(self):
         logging.warn("status: not implement")
 
-    def log(self):
-        cmd = TT('tail $logfile', self.args)
-        logging.info('log of %s' % self)
-        print self._run(cmd)
-
     def _alive(self):
         logging.warn("_alive: not implement")
 

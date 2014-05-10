@@ -112,8 +112,8 @@ def test_nc_stats():
     conn = redis.Redis(nc.host(),nc.port())
     kv = {'kkk-%s' % i :'vvv-%s' % i for i in range(10)}
     for k, v in kv.items():
-        print conn.set(k, v)
-        print conn.get(k)
+        conn.set(k, v)
+        conn.get(k)
 
     def get_stat(name):
         time.sleep(1)
@@ -196,7 +196,7 @@ def test_mget_pipeline():
         pipe.get(k)
     rst = pipe.execute()
 
-    print rst
+    #print rst
     #check the result
     keys = default_kv.keys()
 

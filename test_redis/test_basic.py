@@ -7,7 +7,7 @@ def test_zadd():
     conn = redis.Redis('127.0.0.5',4100)
     rst = conn.zadd('z', 'z1', 1)
     # should return 1 but actual return 0
-    print rst
+    #print rst
 
 def test_msetnx():
     conn = redis.Redis("127.0.0.5",4100);

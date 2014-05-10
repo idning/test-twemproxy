@@ -24,11 +24,6 @@ all_mc= [
         Memcached('127.0.0.5', 2201, '/tmp/r/memcached-2201/', CLUSTER_NAME, 'mc-2201'),
     ]
 
-if 'NC_VERBOSE' in os.environ:
-    nc_verbose = os.environ['NC_VERBOSE']
-else:
-    nc_verbose = 4
-
 nc_verbose = int(getenv('NC_VERBOSE', 4))
 mbuf = int(getenv('NC_MBUF', 512))
 large = int(getenv('NC_LARGE', 1000))
@@ -50,7 +45,6 @@ def teardown():
         r.stop()
     assert(nc._alive())
     nc.stop()
-    pass
 
 ######################################################
 
@@ -84,7 +78,7 @@ def test_mget_mset(kv=default_kv):
 
 def test_mget_mset_large():
     for cnt in range(179, large, 179):
-        print 'test', cnt
+        #print 'test', cnt
         kv = {'kkk-%s' % i :'vvv-%s' % i for i in range(cnt)}
         test_mget_mset(kv)
 
