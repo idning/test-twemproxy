@@ -28,7 +28,7 @@ all_redis = [
 nc = NutCracker('127.0.0.5', 4100, '/tmp/r/nutcracker-4100', CLUSTER_NAME, all_redis, mbuf=mbuf, verbose=nc_verbose)
 
 def setup():
-    #print 'setup', nc.args['mbuf']
+    print 'setup(mbuf=%s, verbose=%s)' %(mbuf, nc_verbose)
     for r in all_redis + [nc]:
         r.deploy()
         r.stop()
