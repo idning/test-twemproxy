@@ -25,7 +25,8 @@ from string import Template
 PWD = os.path.dirname(os.path.realpath(__file__))
 WORKDIR = os.path.join(PWD,  '../')
 
-logging.basicConfig(filename='t.log', format="%(asctime)-15s [%(threadName)s] [%(levelname)s] %(message)s", level=logging.DEBUG)
+#logging.basicConfig(filename='t.log', format="%(asctime)-15s [%(threadName)s] [%(levelname)s] %(message)s", level=logging.DEBUG)
+logging.basicConfig(format="%(asctime)-15s [%(threadName)s] [%(levelname)s] %(message)s", level=logging.DEBUG)
 logging.info("test running!!!!!!")
 
 def getenv(key, default):
