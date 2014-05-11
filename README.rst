@@ -1,5 +1,9 @@
 Python testing facilities for twemproxy, this test suite is based on https://github.com/idning/redis-mgr
 
+already add to https://travis-ci.org/idning/twemproxy as travis-ci
+
+see https://github.com/idning/twemproxy/blob/travis-ci/travis.sh
+
 usage
 =====
 
@@ -36,6 +40,7 @@ usage
 
     cp tests/test_del.py tests/test_xxx.py
     vim tests/test_xxx.py
+
 
 
 variables
