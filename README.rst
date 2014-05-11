@@ -46,4 +46,19 @@ variables
     export NC_MBUF=512  will start nutcracker whit '-m 512' (default:521)
     export NC_LARGE=10000 will test 10000 keys for mget/mset (default:1000)
 
+TEST_LOGFILE:
+
+- to put test log on stderr::
+
+    export TEST_LOGFILE=-
+
+- to put test log on t.log::
+
+    export TEST_LOGFILE=t.log
+
+  or::
+
+    unset TEST_LOGFILE
+
+
 
