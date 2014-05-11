@@ -1,0 +1,3 @@
+language: python
+script: cd test-travis && nosetests --nocapture  --nologcapture -v && ls -l
+
