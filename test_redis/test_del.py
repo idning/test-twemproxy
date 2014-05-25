@@ -51,3 +51,15 @@ def test_multi_delete_on_backend_down():
 
     for r in all_redis:
         r.start()
+
+
+def test_multi_delete_20140525():
+    conn = redis.Redis('127.0.0.5', 4100)
+    cnt = 126
+    keys = ['key-%s'%i for i in range(cnt)]
+    pipe = conn.pipeline(transaction=False)
+    pipe.mget(keys)
+    pipe.delete(*keys)
+    print pipe.execute()
+
+
