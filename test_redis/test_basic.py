@@ -26,3 +26,7 @@ def test_lpush_lrange():
     rst = conn.lrange('mylist', 0, -1)
 
     assert 10 == len(rst)
+
+
+def setup_and_wait():
+    time.sleep(60*60)

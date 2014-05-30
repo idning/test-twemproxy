@@ -60,6 +60,6 @@ def test_multi_delete_20140525():
     pipe = conn.pipeline(transaction=False)
     pipe.mget(keys)
     pipe.delete(*keys)
-    print pipe.execute()
+    pipe.execute()
 
 

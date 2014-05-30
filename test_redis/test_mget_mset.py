@@ -82,7 +82,7 @@ def test_mget_mset_large():
         test_mget_mset(kv)
 
 def test_mget_special_key(cnt=5):
-    #key length = 512-48
+    #key length = 512-48-1
     kv = {}
     for i in range(cnt):
         k = 'kkk-%s' % i
@@ -92,7 +92,7 @@ def test_mget_special_key(cnt=5):
     test_mget_mset(kv)
 
 def test_mget_special_key_2(cnt=5):
-    #key length = 512-48
+    #key length = 512-48-2
     kv = {}
     for i in range(cnt):
         k = 'kkk-%s' % i
