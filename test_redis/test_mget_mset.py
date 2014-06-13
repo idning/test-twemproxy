@@ -146,10 +146,15 @@ def test_nc_stats():
 
 def test_mget_on_backend_down():
     #one backend down
-    all_redis[0].stop()
+
     conn = redis.Redis(nc.host(), nc.port())
+    assert_equal(None, conn.get('key-2'))
+    assert_equal(None, conn.get('key-1'))
+
+    all_redis[0].stop()
 
     assert_fail('Connection refused|reset by peer', conn.mget, 'key-1')
+    assert_fail('Connection refused|reset by peer', conn.get, 'key-1')
     assert_equal(None, conn.get('key-2'))
 
     keys = ['key-1', 'key-2', 'kkk-3']
@@ -213,4 +218,17 @@ def test_mget_pipeline():
 
     for i, k in enumerate(keys):
         assert(None == vals[i])
+
+def test_slow_req():
+    conn = redis.Redis(nc.host(),nc.port())
+    kv = {'mkkk-%s' % i : 'mvvv-%s' % i for i in range(300000)}
+
+    pipe = conn.pipeline(transaction=False)
+    pipe.set('key-1', 'v1')
+    pipe.get('key-1')
+    pipe.hmset('xxx', kv)
+    pipe.get('key-2')
+    pipe.get('key-3')
+
+    assert_fail('timed out', pipe.execute)
 
