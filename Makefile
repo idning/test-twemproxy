@@ -7,3 +7,7 @@ debug:
 
 one:
 	nosetests --nocapture --nologcapture -v test_redis/test_del.py:test_multi_delete_20140525
+
+wait:
+	nosetests --nocapture --nologcapture -v test_redis/test_basic.py:setup_and_wait
+

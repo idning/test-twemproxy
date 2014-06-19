@@ -101,10 +101,6 @@ def test_mget_special_key_2(cnt=5):
 
     test_mget_mset(kv)
 
-def test_fuzz():
-    conn = redis.Redis(nc.host(),nc.port())
-    #not supported
-    assert_fail('Socket closed', conn.msetnx, **default_kv)
 
 def test_nc_stats():
     nc.stop() #reset counters
@@ -219,16 +215,4 @@ def test_mget_pipeline():
     for i, k in enumerate(keys):
         assert(None == vals[i])
 
-def test_slow_req():
-    conn = redis.Redis(nc.host(),nc.port())
-    kv = {'mkkk-%s' % i : 'mvvv-%s' % i for i in range(300000)}
-
-    pipe = conn.pipeline(transaction=False)
-    pipe.set('key-1', 'v1')
-    pipe.get('key-1')
-    pipe.hmset('xxx', kv)
-    pipe.get('key-2')
-    pipe.get('key-3')
-
-    assert_fail('timed out', pipe.execute)
 

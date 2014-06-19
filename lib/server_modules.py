@@ -256,8 +256,22 @@ $cluster_name:
 
     def host(self):
         return self.args['host']
+
     def port(self):
         return self.args['port']
+
+    def logfile(self):
+        return self.args['logfile']
+
+    def cleanlog(self):
+        cmd = TT("rm '$logfile'", self.args)
+        self._run(cmd)
+
+    def signal(self, signo):
+        self.args['signo'] = signo
+        cmd = TT("pkill -$signo -f '^$runcmd'", self.args)
+        #print cmd
+        self._run(cmd)
 
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 
