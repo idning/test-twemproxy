@@ -6,7 +6,7 @@ from common import *
 def test_setget():
     conn = redis.Redis('127.0.0.5',4100)
     rst = conn.set('k', 'v')
-    assert(conn.get('k'), 'v')
+    assert(conn.get('k') == 'v')
 
 def test_msetnx():
     conn = redis.Redis("127.0.0.5",4100);
