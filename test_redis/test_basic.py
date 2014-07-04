@@ -3,11 +3,10 @@
 
 from common import *
 
-def test_zadd():
+def test_setget():
     conn = redis.Redis('127.0.0.5',4100)
-    rst = conn.zadd('z', 'z1', 1)
-    # should return 1 but actual return 0
-    #print rst
+    rst = conn.set('k', 'v')
+    assert(conn.get('k'), 'v')
 
 def test_msetnx():
     conn = redis.Redis("127.0.0.5",4100);
