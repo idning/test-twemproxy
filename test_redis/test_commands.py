@@ -38,6 +38,35 @@ def test_hscan():
     assert(cursor == '0')
     assert(dic == {'kkk-5': 'vvv-5'})
 
+def test_hscan_large():
+    r = getconn()
+
+    kv = {'x'* 100 + 'kkk-%s' % i : 'vvv-%s' % i for i in range(1000)}
+    r.hmset('a', kv)
+
+    cursor = '0'
+    dic = {}
+    while True:
+        cursor, t = r.hscan('a', cursor, count=10)
+        for k, v in t.items():
+            dic[k] = v
+
+        if '0' == cursor:
+            break
+
+    assert(dic == kv)
+
+    cursor, dic = r.hscan('a', '0', match='*kkk-5*', count=1000)
+    if cursor == '0':
+        assert(len(dic) == 111)
+    else:
+        assert(len(dic) == 111)
+
+        #again.
+        cursor, dic = r.hscan('a', cursor, match='*kkk-5*', count=1000)
+        assert(cursor == '0')
+        assert(len(dic) == 0)
+
 def test_zscan():
     r = getconn()
 
