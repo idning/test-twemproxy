@@ -15,7 +15,7 @@ import conf
 from server_modules import *
 from utils import *
 
-CLUSTER_NAME = 'ttt'
+CLUSTER_NAME = 'ntest'
 nc_verbose = int(getenv('NC_VERBOSE', 4))
 mbuf = int(getenv('NC_MBUF', 512))
 large = int(getenv('NC_LARGE', 1000))
@@ -35,10 +35,17 @@ def setup():
         r.start()
 
 def teardown():
-    #print 'teardown'
     for r in all_redis + [nc]:
         assert(r._alive())
         r.stop()
 
 default_kv = {'kkk-%s' % i : 'vvv-%s' % i for i in range(10)}
+
+def getconn():
+    for r in all_redis:
+        c = redis.Redis(r.host(), r.port())
+        c.flushdb()
+
+    r = redis.Redis(nc.host(), nc.port())
+    return r
 

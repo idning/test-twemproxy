@@ -96,6 +96,12 @@ class Base:
         logging.debug('return : [%d] [%s] ' % (len(ret), shorten(ret)) )
         return ret
 
+    def host(self):
+        return self.args['host']
+
+    def port(self):
+        return self.args['port']
+
 
 class RedisServer(Base):
     def __init__(self, host, port, path, cluster_name, server_name):
@@ -253,12 +259,6 @@ $cluster_name:
         self.deploy()
         self.start()
         logging.info('proxy %s:%s is updated' % (self.args['host'], self.args['port']))
-
-    def host(self):
-        return self.args['host']
-
-    def port(self):
-        return self.args['port']
 
     def logfile(self):
         return self.args['logfile']

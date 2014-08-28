@@ -4,8 +4,8 @@
 from common import *
 
 def test_pipeline():
-    conn = redis.Redis('127.0.0.5',4100)
-    pipe = conn.pipeline(transaction=False)
+    r = redis.Redis('127.0.0.5',4100)
+    pipe = r.pipeline(transaction=False)
     pipe.set('a','a1').get('a')
 #zadd return result is not the same as from redis-cli,maybe redis-py problem
 #.zadd('z', 'z1', 1).zadd('z', 'z2', 4)
@@ -15,8 +15,8 @@ def test_pipeline():
     assert rst == [True, 'a1']
 
 def test_pipeline_length():
-    conn = redis.Redis('127.0.0.5',4100)
-    pipe = conn.pipeline(transaction = False)
+    r = redis.Redis('127.0.0.5',4100)
+    pipe = r.pipeline(transaction = False)
     assert len(pipe) == 0
     assert not pipe
 
