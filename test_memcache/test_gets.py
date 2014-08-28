@@ -48,8 +48,12 @@ def teardown():
 
 ######################################################
 
+def getconn():
+    host_port = '%s:%s' % (nc.host(), nc.port())
+    return memcache.Client([host_port])
+
 def test_basic():
-    conn = memcache.Client(['127.0.0.1:4100'])
+    conn = getconn()
     conn.set('k', 'v')
     assert('v' == conn.get('k'))
 
@@ -63,7 +67,7 @@ def test_basic():
 
 default_kv = {'kkk-%s' % i :'vvv-%s' % i for i in range(10)}
 def test_mget_mset(kv=default_kv):
-    conn = memcache.Client(['127.0.0.1:4100'])
+    conn = getconn()
     conn.set_multi(kv)
     keys = sorted(kv.keys())
 
@@ -83,7 +87,7 @@ def test_mget_mset_large():
         test_mget_mset(kv)
 
 def test_mget_mset_key_not_exists(kv=default_kv):
-    conn = memcache.Client(['127.0.0.1:4100'])
+    conn = getconn()
     conn.set_multi(kv)
 
     keys = kv.keys()

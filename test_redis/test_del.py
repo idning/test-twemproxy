@@ -4,7 +4,8 @@
 from common import *
 
 def test_multi_delete_normal():
-    r = redis.Redis('127.0.0.5', 4100)
+    r = getconn()
+
     for i in range(100):
         r.set('key-%s'%i, 'val-%s'%i)
     for i in range(100):
@@ -19,7 +20,7 @@ def test_multi_delete_normal():
 def test_multi_delete_on_readonly():
     all_redis[0].slaveof(all_redis[1].args['host'], all_redis[1].args['port'])
 
-    r = redis.Redis('127.0.0.5', 4100)
+    r = redis.Redis(nc.host(), nc.port())
 
     assert_fail('READONLY|Invalid', r.delete, 'key-1')           # got "READONLY You can't write against a read only slave"
     assert_equal(0, r.delete('key-2'))
@@ -31,7 +32,7 @@ def test_multi_delete_on_readonly():
 def test_multi_delete_on_backend_down():
     #one backend down
     all_redis[0].stop()
-    r = redis.Redis('127.0.0.5', 4100)
+    r = redis.Redis(nc.host(), nc.port())
 
     assert_fail('Connection refused|reset by peer', r.delete, 'key-1')
     assert_equal(None, r.get('key-2'))
@@ -41,7 +42,7 @@ def test_multi_delete_on_backend_down():
 
     #all backend down
     all_redis[1].stop()
-    r = redis.Redis('127.0.0.5', 4100)
+    r = redis.Redis(nc.host(), nc.port())
 
     assert_fail('Connection refused|reset by peer', r.delete, 'key-1')
     assert_fail('Connection refused|reset by peer', r.delete, 'key-2')
@@ -54,7 +55,8 @@ def test_multi_delete_on_backend_down():
 
 
 def test_multi_delete_20140525():
-    r = redis.Redis('127.0.0.5', 4100)
+    r = getconn()
+
     cnt = 126
     keys = ['key-%s'%i for i in range(cnt)]
     pipe = r.pipeline(transaction=False)

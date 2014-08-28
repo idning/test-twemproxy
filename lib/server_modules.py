@@ -96,6 +96,10 @@ class Base:
         logging.debug('return : [%d] [%s] ' % (len(ret), shorten(ret)) )
         return ret
 
+    def clean(self):
+        cmd = TT("rm -rf $path", self.args)
+        self._run(cmd)
+
     def host(self):
         return self.args['host']
 

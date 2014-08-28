@@ -38,6 +38,7 @@ def teardown():
     for r in all_redis + [nc]:
         assert(r._alive())
         r.stop()
+        r.clean()
 
 default_kv = {'kkk-%s' % i : 'vvv-%s' % i for i in range(10)}
 

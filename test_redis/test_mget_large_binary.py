@@ -8,7 +8,7 @@ from test_mget_mset import test_mget_mset as _mget_mset
 
 mbuf = 64*1024
 
-nc = NutCracker('127.0.0.5', 4100, '/tmp/r/nutcracker-4100', CLUSTER_NAME, all_redis, mbuf=mbuf, verbose=nc_verbose)
+nc = NutCracker(nc.host(), nc.port(), '/tmp/r/nutcracker-4100', CLUSTER_NAME, all_redis, mbuf=mbuf, verbose=nc_verbose)
 
 def setup():
     print 'special setup(mbuf=%s, verbose=%s)' %(mbuf, nc_verbose)
@@ -18,7 +18,6 @@ def setup():
         r.start()
 
 def teardown():
-    #print 'teardown'
     for r in all_redis + [nc]:
         assert(r._alive())
         r.stop()

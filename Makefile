@@ -13,3 +13,7 @@ one:
 wait:
 	nosetests --nocapture --nologcapture -v test_redis/test_basic.py:setup_and_wait
 
+clean:
+	find . -name '*.pyc' | xargs rm -f
+	rm gmon.out *.log
+
