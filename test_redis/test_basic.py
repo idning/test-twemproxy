@@ -51,5 +51,43 @@ def test_signal():
     #recover
     nc.start()
 
+def test_nc_stats():
+    nc.stop() #reset counters
+    nc.start()
+    r = getconn()
+    kv = {'kkk-%s' % i :'vvv-%s' % i for i in range(10)}
+    for k, v in kv.items():
+        r.set(k, v)
+        r.get(k)
+
+    def get_stat(name):
+        time.sleep(1)
+        stat = nc._info_dict()
+        #pprint(stat)
+        if name in [ 'client_connections', 'client_eof', 'client_err', 'forward_error', 'fragments', 'server_ejects']:
+            return stat[CLUSTER_NAME][name]
+
+        #sum num of each server
+        ret = 0
+        for k, v in stat[CLUSTER_NAME].items():
+            if type(v) == dict:
+                ret += v[name]
+        return ret
+
+    assert(get_stat('requests') == 20)
+    assert(get_stat('responses') == 20)
+
+    ##### mget
+    keys = kv.keys()
+    r.mget(keys)
+
+    #for version<=0.3.0
+    #assert(get_stat('requests') == 30)
+    #assert(get_stat('responses') == 30)
+
+    #for mget-improve
+    assert(get_stat('requests') == 22)
+    assert(get_stat('responses') == 22)
+
 def setup_and_wait():
     time.sleep(60*60)
