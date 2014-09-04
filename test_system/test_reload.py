@@ -68,11 +68,24 @@ def test_reload_with_old_conf():
 
     # nc.reload() is same as nc.stop() and nc.start()
     nc.reload()
+    # the old connection is still ok in NC_RELOAD_DELAY seconds
+    send_cmd(conn, '*2\r\n$3\r\nGET\r\n$1\r\nk\r\n', '$1\r\nv\r\n')
+
+    # conn2 should connect to new instance
+    conn2 = get_tcp_conn(nc.host(), nc.port())
+    send_cmd(conn2, '*2\r\n$3\r\nGET\r\n$1\r\nk\r\n', '$1\r\nv\r\n')
+
+    # the old connection is still ok in NC_RELOAD_DELAY seconds
+    send_cmd(conn, '*2\r\n$3\r\nGET\r\n$1\r\nk\r\n', '$1\r\nv\r\n')
+
     time.sleep(NC_RELOAD_DELAY)
     assert(pid != nc.pid())
 
     # assert the old connection is closed.
     send_cmd(conn, '*2\r\n$3\r\nGET\r\n$1\r\nk\r\n', '')
+
+    # conn2 should survive
+    send_cmd(conn2, '*2\r\n$3\r\nGET\r\n$1\r\nk\r\n', '$1\r\nv\r\n')
 
     r = redis.Redis(nc.host(), nc.port())
     rst = r.set('k', 'v')
