@@ -24,6 +24,8 @@ nc_verbose = int(getenv('NC_VERBOSE', 5))
 mbuf = int(getenv('NC_MBUF', 512))
 large = int(getenv('NC_LARGE', 1000))
 
+NC_RELOAD_DELAY = 3 + 1
+
 all_redis = [
         RedisServer('127.0.0.5', 2100, '/tmp/r/redis-2100/', CLUSTER_NAME, 'redis-2100'),
         RedisServer('127.0.0.5', 2101, '/tmp/r/redis-2101/', CLUSTER_NAME, 'redis-2101'),
@@ -66,7 +68,7 @@ def test_reload_with_old_conf():
 
     # nc.reload() is same as nc.stop() and nc.start()
     nc.reload()
-    time.sleep(1)
+    time.sleep(NC_RELOAD_DELAY)
     assert(pid != nc.pid())
 
     # assert the old connection is closed.
@@ -94,7 +96,7 @@ reload_test:
 '''
 
     nc.set_config(content)
-    time.sleep(1)
+    time.sleep(NC_RELOAD_DELAY)
 
     r1 = redis.Redis(nc.host(), nc.port())
     r2 = redis.Redis(nc.host(), 4101)
@@ -129,7 +131,7 @@ reload_test2:
 '''
 
     nc.set_config(content)
-    time.sleep(1)
+    time.sleep(NC_RELOAD_DELAY)
 
     r1 = redis.Redis(nc.host(), nc.port())
     r2 = redis.Redis(nc.host(), 4101)
@@ -149,7 +151,7 @@ reload_test:
     - 127.0.0.5:2101:1 redis-2101
 '''
     nc.set_config(content)
-    time.sleep(1)
+    time.sleep(NC_RELOAD_DELAY)
     pid = nc.pid()
     print system('ls -l /proc/%s/fd/' % pid)
 
