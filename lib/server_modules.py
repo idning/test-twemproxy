@@ -85,6 +85,10 @@ class Base:
         t2 = time.time()
         logging.info('%s stop ok in %.2f seconds' %(self, t2-t1) )
 
+    def pid(self):
+        cmd = TT("pgrep -f '^$runcmd'", self.args)
+        return self._run(cmd)
+
     def status(self):
         logging.warn("status: not implement")
 
@@ -105,7 +109,6 @@ class Base:
 
     def port(self):
         return self.args['port']
-
 
 class RedisServer(Base):
     def __init__(self, host, port, path, cluster_name, server_name):
@@ -195,7 +198,7 @@ class Memcached(Base):
         self._run(TT('cp $BINS $path/bin/', self.args))
 
 class NutCracker(Base):
-    def __init__(self, host, port, path, cluster_name, masters, mbuf=512, verbose=4, is_redis=True):
+    def __init__(self, host, port, path, cluster_name, masters, mbuf=512, verbose=5, is_redis=True):
         Base.__init__(self, 'nutcracker', host, port, path)
 
         self.masters = masters
@@ -274,8 +277,17 @@ $cluster_name:
     def signal(self, signo):
         self.args['signo'] = signo
         cmd = TT("pkill -$signo -f '^$runcmd'", self.args)
-        #print cmd
         self._run(cmd)
+
+    def reload(self):
+        self.signal('USR1')
+
+    def set_config(self, content):
+        fout = open(TT('$path/conf/nutcracker.conf', self.args), 'w+')
+        fout.write(content)
+        fout.close()
+
+        self.reload()
 
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 

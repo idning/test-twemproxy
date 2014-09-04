@@ -16,9 +16,10 @@ from server_modules import *
 from utils import *
 
 CLUSTER_NAME = 'ntest'
-nc_verbose = int(getenv('NC_VERBOSE', 4))
+nc_verbose = int(getenv('NC_VERBOSE', 5))
 mbuf = int(getenv('NC_MBUF', 512))
 large = int(getenv('NC_LARGE', 1000))
+clean = int(getenv('NC_CLEAN', 1))
 
 all_redis = [
         RedisServer('127.0.0.5', 2100, '/tmp/r/redis-2100/', CLUSTER_NAME, 'redis-2100'),
@@ -38,7 +39,8 @@ def teardown():
     for r in all_redis + [nc]:
         assert(r._alive())
         r.stop()
-        r.clean()
+        if clean:
+            r.clean()
 
 default_kv = {'kkk-%s' % i : 'vvv-%s' % i for i in range(10)}
 

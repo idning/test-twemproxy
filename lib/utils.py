@@ -100,10 +100,12 @@ def assert_raises(exception_cls, callable, *args, **kwargs):
 def assert_fail(err_response, callable, *args, **kwargs):
     try:
         callable(*args, **kwargs)
-        assert False, 'assert_fail %s but nothing raise' % (err_response)
     except Exception as e:
         #assert strstr(str(e), err_response), 'assert "%s" but got "%s"' % (err_response, e)
         assert re.search(err_response, str(e)), 'assert "%s" but got "%s"' % (err_response, e)
+        return
+
+    assert False, 'assert_fail %s but nothing raise' % (err_response)
 
 if __name__ == "__main__":
     test_nothrow()
