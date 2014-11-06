@@ -14,7 +14,7 @@ def test_msetnx():
 
     #not supported
     keys = default_kv.keys()
-    assert_fail('Socket closed', r.msetnx,**default_kv)
+    assert_fail('Socket closed|Connection closed', r.msetnx,**default_kv)
 
 def test_ping_quit():
     r = getconn()
@@ -24,7 +24,7 @@ def test_ping_quit():
     rst = r.set('k', 'v')
     assert(r.get('k') == 'v')
 
-    assert_fail('Socket closed', r.execute_command, 'QUIT')
+    assert_fail('Socket closed|Connection closed', r.execute_command, 'QUIT')
 
 def test_slow_req():
     r = getconn()

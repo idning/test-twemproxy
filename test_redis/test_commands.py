@@ -31,11 +31,11 @@ def test_hscan():
     r.hmset('a', kv)
 
     cursor, dic = r.hscan('a')
-    assert(cursor == '0')
+    assert(str(cursor) == '0')
     assert(dic == kv)
 
     cursor, dic = r.hscan('a', match='kkk-5')
-    assert(cursor == '0')
+    assert(str(cursor) == '0')
     assert(dic == {'kkk-5': 'vvv-5'})
 
 def test_hscan_large():
@@ -51,20 +51,20 @@ def test_hscan_large():
         for k, v in t.items():
             dic[k] = v
 
-        if '0' == cursor:
+        if '0' == str(cursor):
             break
 
     assert(dic == kv)
 
     cursor, dic = r.hscan('a', '0', match='*kkk-5*', count=1000)
-    if cursor == '0':
+    if str(cursor) == '0':
         assert(len(dic) == 111)
     else:
         assert(len(dic) == 111)
 
         #again.
         cursor, dic = r.hscan('a', cursor, match='*kkk-5*', count=1000)
-        assert(cursor == '0')
+        assert(str(cursor) == '0')
         assert(len(dic) == 0)
 
 def test_zscan():
@@ -73,11 +73,11 @@ def test_zscan():
     r.zadd('a', 'a', 1, 'b', 2, 'c', 3)
 
     cursor, pairs = r.zscan('a')
-    assert(cursor == '0')
+    assert(str(cursor) == '0')
     assert(set(pairs) == set([('a', 1), ('b', 2), ('c', 3)]))
 
     cursor, pairs = r.zscan('a', match='a')
-    assert(cursor == '0')
+    assert(str(cursor) == '0')
     assert(set(pairs) == set([('a', 1)]))
 
 def test_sscan():
@@ -86,10 +86,10 @@ def test_sscan():
     r.sadd('a', 1, 2, 3)
 
     cursor, members = r.sscan('a')
-    assert(cursor == '0')
+    assert(str(cursor) == '0')
     assert(set(members) == set(['1', '2', '3']))
 
     cursor, members = r.sscan('a', match='1')
-    assert(cursor == '0')
+    assert(str(cursor) == '0')
     assert(set(members) == set(['1']))
 
