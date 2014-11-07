@@ -13,6 +13,10 @@ usage
     pip install redis
     pip install -e git://github.com/idning/python-memcached.git#egg=memcache
 
+   for mac, add 127.0.0.5 as localhost::
+
+    sudo ifconfig lo0 alias 127.0.0.5
+
 2. copy binarys to _binaries/::
 
     _binaries/

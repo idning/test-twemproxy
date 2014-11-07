@@ -252,6 +252,11 @@ $cluster_name:
         fout.write(self._gen_conf())
         fout.close()
 
+    def version(self):
+        #This is nutcracker-0.4.0
+        s = self._run(TT('$BINS --version', self.args))
+        return s.strip().replace('This is nutcracker-', '')
+
     def _info_dict(self):
         try:
             ret = telnetlib.Telnet(self.args['host'], self.args['status_port']).read_all()
@@ -281,6 +286,7 @@ $cluster_name:
 
     def reload(self):
         self.signal('USR1')
+
 
     def set_config(self, content):
         fout = open(TT('$path/conf/nutcracker.conf', self.args), 'w+')
