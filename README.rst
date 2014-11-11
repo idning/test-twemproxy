@@ -70,4 +70,9 @@ TEST_LOGFILE:
     unset TEST_LOGFILE
 
 
+notes
+=====
+
+- After all the tests. you may got a core because we have a case in test_signal which will send SEGV to nutcracker
+
 

@@ -29,7 +29,7 @@ def test_ping_quit():
 def test_slow_req():
     r = getconn()
 
-    kv = {'mkkk-%s' % i : 'mvvv-%s' % i for i in range(300000)}
+    kv = {'mkkk-%s' % i : 'mvvv-%s' % i for i in range(500000)}
 
     pipe = r.pipeline(transaction=False)
     pipe.set('key-1', 'v1')

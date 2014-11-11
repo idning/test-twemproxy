@@ -14,7 +14,7 @@ start()
 
 stop() 
 {
-    pkill -f '${runcmd}'
+    pkill -9 -f '${runcmd}'
 }
 
 case C"$$1" in

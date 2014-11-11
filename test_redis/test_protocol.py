@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from common import *
+from pprint import pprint
 
 def get_conn():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -34,6 +35,22 @@ def test_pingpong():
     req = '*1\r\n$4\r\nPING\r\n'
     resp = '+PONG\r\n'
     _test(req, resp)
+
+def test_quit():
+    req = '*1\r\n$4\r\nQUIT\r\n'
+    resp = '+OK\r\n'
+    _test(req, resp)
+
+def test_quit_without_recv():
+    req = '*1\r\n$4\r\nQUIT\r\n'
+    resp = '+OK\r\n'
+    s = get_conn()
+
+    s.sendall(req)
+    s.close()
+    info = nc._info_dict()
+    #pprint(info)
+    assert(info['ntest']['client_err'] == 1)
 
 def _test_bad(req):
     s = get_conn()
