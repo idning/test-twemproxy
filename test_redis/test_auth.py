@@ -10,15 +10,18 @@ all_redis = [
 
 nc = NutCracker('127.0.0.5', 4100, '/tmp/r/nutcracker-4100', CLUSTER_NAME, all_redis, mbuf=mbuf, verbose=nc_verbose, redis_auth = 'hellopasswd')
 
+nc_badpass = NutCracker('127.0.0.5', 4101, '/tmp/r/nutcracker-4101', CLUSTER_NAME, all_redis, mbuf=mbuf, verbose=nc_verbose, redis_auth = 'badpasswd')
+nc_nopass = NutCracker('127.0.0.5', 4102, '/tmp/r/nutcracker-4102', CLUSTER_NAME, all_redis, mbuf=mbuf, verbose=nc_verbose)
+
 def setup():
     print 'setup(mbuf=%s, verbose=%s)' %(mbuf, nc_verbose)
-    for r in all_redis + [nc]:
+    for r in all_redis + [nc, nc_badpass, nc_nopass]:
         r.deploy()
         r.stop()
         r.start()
 
 def teardown():
-    for r in all_redis + [nc]:
+    for r in all_redis + [nc, nc_badpass, nc_nopass]:
         assert(r._alive())
         r.stop()
         if clean:
@@ -27,18 +30,74 @@ def teardown():
 default_kv = {'kkk-%s' % i : 'vvv-%s' % i for i in range(10)}
 
 def getconn():
-    for r in all_redis:
-        c = redis.Redis(r.host(), r.port())
-        c.flushdb()
-
     r = redis.Redis(nc.host(), nc.port())
     return r
 
-def test_setget():
-    r = getconn()
+'''
 
-    rst = r.set('k', 'v')
-    assert(r.get('k') == 'v')
+cases:
+
+
+redis       proxy       case
+1           1           test_auth_basic
+1           bad         test_badpass_on_proxy
+1           0           test_nopass_on_proxy
+0           0           already tested on other case
+0           1
+
+'''
+
+def test_auth_basic():
+    # we hope to have same behavior when the server is redis or twemproxy
+    conns = [
+         redis.Redis(all_redis[0].host(), all_redis[0].port()),
+         redis.Redis(nc.host(), nc.port()),
+    ]
+
+    for r in conns:
+        assert_fail('NOAUTH|operation not permitted', r.ping)
+        assert_fail('NOAUTH|operation not permitted', r.set, 'k', 'v')
+        assert_fail('NOAUTH|operation not permitted', r.get, 'k')
+
+        # bad passwd
+        assert_fail('invalid password', r.execute_command, 'AUTH', 'badpasswd')
+
+        # everything is ok after auth
+        r.execute_command('AUTH', 'hellopasswd')
+        r.set('k', 'v')
+        assert(r.ping() == True)
+        assert(r.get('k') == 'v')
+
+        # auth fail here, should we return ok or not => we will mark the conn state as not authed
+        assert_fail('invalid password', r.execute_command, 'AUTH', 'badpasswd')
+
+        assert_fail('NOAUTH|operation not permitted', r.ping)
+        assert_fail('NOAUTH|operation not permitted', r.get, 'k')
+
+def test_nopass_on_proxy():
+    r = redis.Redis(nc_nopass.host(), nc_nopass.port())
+
+    assert_fail('NOAUTH|operation not permitted', r.ping)
+    assert_fail('NOAUTH|operation not permitted', r.set, 'k', 'v')
+    assert_fail('NOAUTH|operation not permitted', r.get, 'k')
+
+    # proxy has no pass, when we try to auth
+    assert_fail('Client sent AUTH, but no password is set', r.execute_command, 'AUTH', 'anypasswd')
+    pass
+
+def test_badpass_on_proxy():
+    r = redis.Redis(nc_nopass.host(), nc_nopass.port())
+
+    assert_fail('NOAUTH|operation not permitted', r.ping)
+    assert_fail('NOAUTH|operation not permitted', r.set, 'k', 'v')
+    assert_fail('NOAUTH|operation not permitted', r.get, 'k')
+
+    # we can auth with bad pass
+    r.execute_command('AUTH', 'badpasswd')
+    # but after that, we still got NOAUTH(return from redis-server)
+    assert_fail('NOAUTH|operation not permitted', r.ping)
+    assert_fail('NOAUTH|operation not permitted', r.set, 'k', 'v')
+    assert_fail('NOAUTH|operation not permitted', r.get, 'k')
 
 def setup_and_wait():
     time.sleep(60*60)
