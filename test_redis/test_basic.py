@@ -16,6 +16,18 @@ def test_msetnx():
     keys = default_kv.keys()
     assert_fail('Socket closed|Connection closed', r.msetnx,**default_kv)
 
+def test_null_key():
+    r = getconn()
+    rst = r.set('', 'v')
+    assert(r.get('') == 'v')
+
+    rst = r.set('', '')
+    assert(r.get('') == '')
+
+    kv = {'' : 'val', 'k': 'v'}
+    ret = r.mset(**kv)
+    assert(r.get('') == 'val')
+
 def test_ping_quit():
     r = getconn()
     assert(r.ping() == True)
