@@ -111,7 +111,7 @@ class Base:
         return self.args['port']
 
 class RedisServer(Base):
-    def __init__(self, host, port, path, cluster_name, server_name):
+    def __init__(self, host, port, path, cluster_name, server_name, auth = None):
         Base.__init__(self, 'redis', host, port, path)
 
         self.args['startcmd']     = TT('bin/redis-server conf/redis.conf', self.args)
@@ -124,9 +124,12 @@ class RedisServer(Base):
 
         self.args['cluster_name'] = cluster_name
         self.args['server_name']  = server_name
+        self.args['auth']         = auth
 
     def _info_dict(self):
         cmd = TT('$REDIS_CLI -h $host -p $port INFO', self.args)
+        if self.args['auth']:
+            cmd = TT('$REDIS_CLI -h $host -p $port -a $auth INFO', self.args)
         info = self._run(cmd)
 
         info = [line.split(':', 1) for line in info.split('\r\n') if not line.startswith('#')]
@@ -135,16 +138,20 @@ class RedisServer(Base):
 
     def _ping(self):
         cmd = TT('$REDIS_CLI -h $host -p $port PING', self.args)
+        if self.args['auth']:
+            cmd = TT('$REDIS_CLI -h $host -p $port -a $auth PING', self.args)
         return self._run(cmd)
 
     def _alive(self):
         return strstr(self._ping(), 'PONG')
 
     def _gen_conf(self):
-
         content = file(os.path.join(WORKDIR, 'conf/redis.conf')).read()
         #content = file('conf/redis.conf').read()
-        return TT(content, self.args)
+        content = TT(content, self.args)
+        if self.args['auth']:
+            content += '\r\nrequirepass %s' % self.args['auth']
+        return content
 
     def _pre_deploy(self):
         self.args['BINS'] = conf.BINARYS['REDIS_SERVER_BINS']
@@ -198,13 +205,14 @@ class Memcached(Base):
         self._run(TT('cp $BINS $path/bin/', self.args))
 
 class NutCracker(Base):
-    def __init__(self, host, port, path, cluster_name, masters, mbuf=512, verbose=5, is_redis=True):
+    def __init__(self, host, port, path, cluster_name, masters, mbuf=512, verbose=5, is_redis=True, redis_auth=None):
         Base.__init__(self, 'nutcracker', host, port, path)
 
         self.masters = masters
 
         self.args['mbuf']        = mbuf
         self.args['verbose']     = verbose
+        self.args['redis_auth']  = redis_auth
         self.args['conf']        = TT('$path/conf/nutcracker.conf', self.args)
         self.args['pidfile']     = TT('$path/log/nutcracker.pid', self.args)
         self.args['logfile']     = TT('$path/log/nutcracker.log', self.args)
@@ -241,6 +249,8 @@ $cluster_name:
   server_failure_limit: 2
   servers:
 '''
+        if self.args['redis_auth']:
+            content = content.replace('redis: $is_redis', 'redis: $is_redis\r\n  redis_auth: $redis_auth')
         content = TT(content, self.args)
         return content + self._gen_conf_section()
 
