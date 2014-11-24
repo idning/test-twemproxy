@@ -77,7 +77,9 @@ def test_auth_basic():
 def test_nopass_on_proxy():
     r = redis.Redis(nc_nopass.host(), nc_nopass.port())
 
-    assert_fail('NOAUTH|operation not permitted', r.ping)
+    # if you config pass on redis but not on twemproxy,
+    # twemproxy will reply ok for ping, but once you do get/set, you will get errmsg from redis
+    assert(r.ping() == True)
     assert_fail('NOAUTH|operation not permitted', r.set, 'k', 'v')
     assert_fail('NOAUTH|operation not permitted', r.get, 'k')
 
@@ -86,16 +88,16 @@ def test_nopass_on_proxy():
     pass
 
 def test_badpass_on_proxy():
-    r = redis.Redis(nc_nopass.host(), nc_nopass.port())
+    r = redis.Redis(nc_badpass.host(), nc_badpass.port())
 
     assert_fail('NOAUTH|operation not permitted', r.ping)
     assert_fail('NOAUTH|operation not permitted', r.set, 'k', 'v')
     assert_fail('NOAUTH|operation not permitted', r.get, 'k')
 
-    # we can auth with bad pass
+    # we can auth with bad pass (twemproxy will say ok for this)
     r.execute_command('AUTH', 'badpasswd')
-    # but after that, we still got NOAUTH(return from redis-server)
-    assert_fail('NOAUTH|operation not permitted', r.ping)
+    # after that, we still got NOAUTH for get/set (return from redis-server)
+    assert(r.ping() == True)
     assert_fail('NOAUTH|operation not permitted', r.set, 'k', 'v')
     assert_fail('NOAUTH|operation not permitted', r.get, 'k')
 
