@@ -10,12 +10,8 @@ usage
 1. install dependency::
 
     pip install nose
-    pip install redis
-    pip install -e git://github.com/idning/python-memcached.git#egg=memcache
-
-   for mac, add 127.0.0.5 as localhost::
-
-    sudo ifconfig lo0 alias 127.0.0.5
+    pip install git+https://github.com/andymccurdy/redis-py.git@2.9.0
+    pip install git+https://github.com/idning/python-memcached.git#egg=memcache
 
 2. copy binarys to _binaries/::
 
@@ -51,23 +47,23 @@ variables
 =========
 ::
 
-    export NC_VERBOSE=9 will start nutcracker with '-v 9'  (default:4)
-    export NC_MBUF=512  will start nutcracker whit '-m 512' (default:521)
-    export NC_LARGE=10000 will test 10000 keys for mget/mset (default:1000)
+    export T_VERBOSE=9 will start nutcracker with '-v 9'  (default:4)
+    export T_MBUF=512  will start nutcracker whit '-m 512' (default:521)
+    export T_LARGE=10000 will test 10000 keys for mget/mset (default:1000)
 
-TEST_LOGFILE:
+T_LOGFILE:
 
 - to put test log on stderr::
 
-    export TEST_LOGFILE=-
+    export T_LOGFILE=-
 
 - to put test log on t.log::
 
-    export TEST_LOGFILE=t.log
+    export T_LOGFILE=t.log
 
   or::
 
-    unset TEST_LOGFILE
+    unset T_LOGFILE
 
 
 notes

@@ -4,14 +4,21 @@
 from common import *
 
 all_redis = [
-        RedisServer('127.0.0.5', 2100, '/tmp/r/redis-2100/', CLUSTER_NAME, 'redis-2100', auth = 'hellopasswd'),
-        RedisServer('127.0.0.5', 2101, '/tmp/r/redis-2101/', CLUSTER_NAME, 'redis-2101', auth = 'hellopasswd'),
-        ]
+    RedisServer('127.0.0.1', 2100, '/tmp/r/redis-2100/',
+                CLUSTER_NAME, 'redis-2100', auth = 'hellopasswd'),
+    RedisServer('127.0.0.1', 2101, '/tmp/r/redis-2101/',
+                CLUSTER_NAME, 'redis-2101', auth = 'hellopasswd'),
+]
 
-nc = NutCracker('127.0.0.5', 4100, '/tmp/r/nutcracker-4100', CLUSTER_NAME, all_redis, mbuf=mbuf, verbose=nc_verbose, redis_auth = 'hellopasswd')
+nc = NutCracker('127.0.0.1', 4100, '/tmp/r/nutcracker-4100', CLUSTER_NAME,
+                all_redis, mbuf=mbuf, verbose=nc_verbose,
+                redis_auth = 'hellopasswd')
 
-nc_badpass = NutCracker('127.0.0.5', 4101, '/tmp/r/nutcracker-4101', CLUSTER_NAME, all_redis, mbuf=mbuf, verbose=nc_verbose, redis_auth = 'badpasswd')
-nc_nopass = NutCracker('127.0.0.5', 4102, '/tmp/r/nutcracker-4102', CLUSTER_NAME, all_redis, mbuf=mbuf, verbose=nc_verbose)
+nc_badpass = NutCracker('127.0.0.1', 4101, '/tmp/r/nutcracker-4101', CLUSTER_NAME,
+                        all_redis, mbuf=mbuf, verbose=nc_verbose,
+                        redis_auth = 'badpasswd')
+nc_nopass = NutCracker('127.0.0.1', 4102, '/tmp/r/nutcracker-4102', CLUSTER_NAME,
+                       all_redis, mbuf=mbuf, verbose=nc_verbose)
 
 def setup():
     print 'setup(mbuf=%s, verbose=%s)' %(mbuf, nc_verbose)

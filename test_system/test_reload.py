@@ -20,18 +20,19 @@ from utils import *
 from nose import with_setup
 
 CLUSTER_NAME = 'ntest'
-nc_verbose = int(getenv('NC_VERBOSE', 5))
-mbuf = int(getenv('NC_MBUF', 512))
-large = int(getenv('NC_LARGE', 1000))
+nc_verbose = int(getenv('T_VERBOSE', 5))
+mbuf = int(getenv('T_MBUF', 512))
+large = int(getenv('T_LARGE', 1000))
 
-NC_RELOAD_DELAY = 3 + 1
+T_RELOAD_DELAY = 3 + 1
 
 all_redis = [
-        RedisServer('127.0.0.5', 2100, '/tmp/r/redis-2100/', CLUSTER_NAME, 'redis-2100'),
-        RedisServer('127.0.0.5', 2101, '/tmp/r/redis-2101/', CLUSTER_NAME, 'redis-2101'),
-        ]
+        RedisServer('127.0.0.1', 2100, '/tmp/r/redis-2100/', CLUSTER_NAME, 'redis-2100'),
+        RedisServer('127.0.0.1', 2101, '/tmp/r/redis-2101/', CLUSTER_NAME, 'redis-2101'),
+    ]
 
-nc = NutCracker('127.0.0.5', 4100, '/tmp/r/nutcracker-4100', CLUSTER_NAME, all_redis, mbuf=mbuf, verbose=nc_verbose)
+nc = NutCracker('127.0.0.1', 4100, '/tmp/r/nutcracker-4100', CLUSTER_NAME,
+                all_redis, mbuf=mbuf, verbose=nc_verbose)
 
 def _setup():
     print 'setup(mbuf=%s, verbose=%s)' %(mbuf, nc_verbose)
@@ -59,7 +60,7 @@ def send_cmd(s, req, resp):
 @with_setup(_setup, _teardown)
 def test_reload_with_old_conf():
     if nc.version() < '0.4.1':
-        print 'ignore test_reload for version %s' % nc.version()
+        print 'Ignore test_reload for version %s' % nc.version()
         return
     pid = nc.pid()
     # print 'old pid:', pid
@@ -73,17 +74,17 @@ def test_reload_with_old_conf():
     nc.reload()
     time.sleep(.01)  #it need time for the old process fork new process.
 
-    # the old connection is still ok in NC_RELOAD_DELAY seconds
+    # the old connection is still ok in T_RELOAD_DELAY seconds
     send_cmd(conn, '*2\r\n$3\r\nGET\r\n$1\r\nk\r\n', '$1\r\nv\r\n')
 
     # conn2 should connect to new instance
     conn2 = get_tcp_conn(nc.host(), nc.port())
     send_cmd(conn2, '*2\r\n$3\r\nGET\r\n$1\r\nk\r\n', '$1\r\nv\r\n')
 
-    # the old connection is still ok in NC_RELOAD_DELAY seconds
+    # the old connection is still ok in T_RELOAD_DELAY seconds
     send_cmd(conn, '*2\r\n$3\r\nGET\r\n$1\r\nk\r\n', '$1\r\nv\r\n')
 
-    time.sleep(NC_RELOAD_DELAY)
+    time.sleep(T_RELOAD_DELAY)
     assert(pid != nc.pid())
 
     # assert the old connection is closed.
@@ -99,7 +100,7 @@ def test_reload_with_old_conf():
 @with_setup(_setup, _teardown)
 def test_new_port():
     if nc.version() < '0.4.1':
-        print 'ignore test_reload for version %s' % nc.version()
+        print 'Ignore test_reload for version %s' % nc.version()
         return
     r = redis.Redis(nc.host(), nc.port())
     r.set('k', 'v')
@@ -112,12 +113,12 @@ reload_test:
   redis: true
   timeout: 400
   servers:
-    - 127.0.0.5:2100:1 redis-2100
-    - 127.0.0.5:2101:1 redis-2101
+    - 127.0.0.1:2100:1 redis-2100
+    - 127.0.0.1:2101:1 redis-2101
 '''
 
     nc.set_config(content)
-    time.sleep(NC_RELOAD_DELAY)
+    time.sleep(T_RELOAD_DELAY)
 
     r1 = redis.Redis(nc.host(), nc.port())
     r2 = redis.Redis(nc.host(), 4101)
@@ -128,7 +129,7 @@ reload_test:
 @with_setup(_setup, _teardown)
 def test_pool_add_del():
     if nc.version() < '0.4.1':
-        print 'ignore test_reload for version %s' % nc.version()
+        print 'Ignore test_reload for version %s' % nc.version()
         return
 
     r = redis.Redis(nc.host(), nc.port())
@@ -141,8 +142,8 @@ reload_test:
   distribution: modula
   redis: true
   servers:
-    - 127.0.0.5:2100:1 redis-2100
-    - 127.0.0.5:2101:1 redis-2101
+    - 127.0.0.1:2100:1 redis-2100
+    - 127.0.0.1:2101:1 redis-2101
 
 reload_test2:
   listen: 0.0.0.0:4101
@@ -150,12 +151,12 @@ reload_test2:
   distribution: modula
   redis: true
   servers:
-    - 127.0.0.5:2100:1 redis-2100
-    - 127.0.0.5:2101:1 redis-2101
+    - 127.0.0.1:2100:1 redis-2100
+    - 127.0.0.1:2101:1 redis-2101
 '''
 
     nc.set_config(content)
-    time.sleep(NC_RELOAD_DELAY)
+    time.sleep(T_RELOAD_DELAY)
 
     r1 = redis.Redis(nc.host(), nc.port())
     r2 = redis.Redis(nc.host(), 4101)
@@ -171,11 +172,11 @@ reload_test:
   redis: true
   preconnect: true
   servers:
-    - 127.0.0.5:2100:1 redis-2100
-    - 127.0.0.5:2101:1 redis-2101
+    - 127.0.0.1:2100:1 redis-2100
+    - 127.0.0.1:2101:1 redis-2101
 '''
     nc.set_config(content)
-    time.sleep(NC_RELOAD_DELAY)
+    time.sleep(T_RELOAD_DELAY)
     pid = nc.pid()
     print system('ls -l /proc/%s/fd/' % pid)
 

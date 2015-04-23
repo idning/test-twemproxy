@@ -196,7 +196,8 @@ def test_multi_delete_on_readonly():
 
     r = redis.Redis(nc.host(), nc.port())
 
-    assert_fail('READONLY|Invalid', r.delete, 'key-1')           # got "READONLY You can't write against a read only slave"
+    # got "READONLY You can't write against a read only slave"
+    assert_fail('READONLY|Invalid', r.delete, 'key-1')
     assert_equal(0, r.delete('key-2'))
     assert_fail('READONLY|Invalid', r.delete, 'key-3')
 

@@ -15,20 +15,18 @@ import conf
 from server_modules import *
 from utils import *
 
-######################################################
-
-
-CLUSTER_NAME = 'ttt'
+CLUSTER_NAME = 'ntest'
 all_mc= [
-        Memcached('127.0.0.5', 2200, '/tmp/r/memcached-2200/', CLUSTER_NAME, 'mc-2200'),
-        Memcached('127.0.0.5', 2201, '/tmp/r/memcached-2201/', CLUSTER_NAME, 'mc-2201'),
+        Memcached('127.0.0.1', 2200, '/tmp/r/memcached-2200/', CLUSTER_NAME, 'mc-2200'),
+        Memcached('127.0.0.1', 2201, '/tmp/r/memcached-2201/', CLUSTER_NAME, 'mc-2201'),
     ]
 
-nc_verbose = int(getenv('NC_VERBOSE', 4))
-mbuf = int(getenv('NC_MBUF', 512))
-large = int(getenv('NC_LARGE', 1000))
+nc_verbose = int(getenv('T_VERBOSE', 4))
+mbuf = int(getenv('T_MBUF', 512))
+large = int(getenv('T_LARGE', 1000))
 
-nc = NutCracker('127.0.0.5', 4100, '/tmp/r/nutcracker-4100', CLUSTER_NAME, all_mc, mbuf=mbuf, verbose=nc_verbose, is_redis=False)
+nc = NutCracker('127.0.0.1', 4100, '/tmp/r/nutcracker-4100', CLUSTER_NAME,
+                all_mc, mbuf=mbuf, verbose=nc_verbose, is_redis=False)
 
 def setup():
     for r in all_mc:
@@ -45,8 +43,6 @@ def teardown():
         r.stop()
     assert(nc._alive())
     nc.stop()
-
-######################################################
 
 def getconn():
     host_port = '%s:%s' % (nc.host(), nc.port())

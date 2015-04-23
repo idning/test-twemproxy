@@ -86,7 +86,8 @@ def test_nc_stats():
         time.sleep(1)
         stat = nc._info_dict()
         #pprint(stat)
-        if name in [ 'client_connections', 'client_eof', 'client_err', 'forward_error', 'fragments', 'server_ejects']:
+        if name in ['client_connections', 'client_eof', 'client_err', \
+                    'forward_error', 'fragments', 'server_ejects']:
             return stat[CLUSTER_NAME][name]
 
         #sum num of each server

@@ -25,19 +25,20 @@ from string import Template
 PWD = os.path.dirname(os.path.realpath(__file__))
 WORKDIR = os.path.join(PWD,  '../')
 
-
 def getenv(key, default):
     if key in os.environ:
         return os.environ[key]
     return default
 
-logfile = getenv('TEST_LOGFILE', 't.log')
+logfile = getenv('T_LOGFILE', 't.log')
 if logfile == '-':
-    logging.basicConfig(format="%(asctime)-15s [%(threadName)s] [%(levelname)s] %(message)s", level=logging.DEBUG)
+    logging.basicConfig(level=logging.DEBUG,
+        format="%(asctime)-15s [%(threadName)s] [%(levelname)s] %(message)s")
 else:
-    logging.basicConfig(filename=logfile, format="%(asctime)-15s [%(threadName)s] [%(levelname)s] %(message)s", level=logging.DEBUG)
+    logging.basicConfig(filename=logfile, level=logging.DEBUG,
+        format="%(asctime)-15s [%(threadName)s] [%(levelname)s] %(message)s")
 
-logging.info("test running!!!!!!")
+logging.info("test running")
 
 def strstr(s1, s2):
     return s1.find(s2) != -1
@@ -47,6 +48,13 @@ def lets_sleep(SLEEP_TIME = 0.1):
 
 def TT(template, args): #todo: modify all
     return Template(template).substitute(args)
+
+def TTCMD(template, args): #todo: modify all
+    '''
+    Template for cmd (we will replace all spaces)
+    '''
+    ret = TT(template, args)
+    return re.sub(' +', ' ', ret)
 
 def nothrow(ExceptionToCheck=Exception, logger=None):
     def deco_retry(f):
@@ -101,13 +109,11 @@ def assert_fail(err_response, callable, *args, **kwargs):
     try:
         callable(*args, **kwargs)
     except Exception as e:
-        #assert strstr(str(e), err_response), 'assert "%s" but got "%s"' % (err_response, e)
-        assert re.search(err_response, str(e)), 'assert "%s" but got "%s"' % (err_response, e)
+        assert re.search(err_response, str(e)), \
+               'assert "%s" but got "%s"' % (err_response, e)
         return
 
     assert False, 'assert_fail %s but nothing raise' % (err_response)
 
 if __name__ == "__main__":
     test_nothrow()
-
-# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4

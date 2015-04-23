@@ -4,7 +4,6 @@
 #author : ning
 #date   : 2014-02-24 13:00:28
 
-
 import os
 import sys
 
@@ -13,7 +12,8 @@ import conf
 
 class Base:
     '''
-    the sub class should implement: _alive, _pre_deploy, status, and init self.args
+    Sub class should implement:
+    _alive, _pre_deploy, status, and init self.args
     '''
     def __init__(self, name, host, port, path):
         self.args = {
@@ -22,8 +22,11 @@ class Base:
             'port'      : port,
             'path'      : path,
 
-            'startcmd'  : '',     #startcmd and runcmd will used to generate the control script
-            'runcmd'    : '',     #process name you see in `ps -aux`, we use this to generate stop cmd
+            #startcmd and runcmd will used to generate the control script
+            #used for the start cmd
+            'startcmd'  : '',
+            #process name you see in `ps -aux`, used this to generate stop cmd
+            'runcmd'    : '',
             'logfile'   : '',
         }
 
@@ -32,7 +35,11 @@ class Base:
 
     def deploy(self):
         logging.info('deploy %s' % self)
-        self._run(TT('mkdir -p $path/bin && mkdir -p $path/conf && mkdir -p $path/log && mkdir -p $path/data ', self.args))
+        self._run(TTCMD('mkdir -p $path/bin &&  \
+                      mkdir -p $path/conf && \
+                      mkdir -p $path/log &&  \
+                      mkdir -p $path/data',
+                self.args))
 
         self._pre_deploy()
         self._gen_control_script()
@@ -132,8 +139,9 @@ class RedisServer(Base):
             cmd = TT('$REDIS_CLI -h $host -p $port -a $auth INFO', self.args)
         info = self._run(cmd)
 
-        info = [line.split(':', 1) for line in info.split('\r\n') if not line.startswith('#')]
-        info = [i for i in info if len(i)>1]
+        info = [line.split(':', 1) for line in info.split('\r\n')
+                if not line.startswith('#')]
+        info = [i for i in info if len(i) > 1]
         return defaultdict(str, info) #this is a defaultdict, be Notice
 
     def _ping(self):
@@ -147,7 +155,6 @@ class RedisServer(Base):
 
     def _gen_conf(self):
         content = file(os.path.join(WORKDIR, 'conf/redis.conf')).read()
-        #content = file('conf/redis.conf').read()
         content = TT(content, self.args)
         if self.args['auth']:
             content += '\r\nrequirepass %s' % self.args['auth']
@@ -170,7 +177,8 @@ class RedisServer(Base):
 
     def isslaveof(self, master_host, master_port):
         info = self._info_dict()
-        if info['master_host'] == master_host and int(info['master_port']) == master_port:
+        if info['master_host'] == master_host and \
+           int(info['master_port']) == master_port:
             logging.debug('already slave of %s:%s' % (master_host, master_port))
             return True
 
@@ -205,7 +213,8 @@ class Memcached(Base):
         self._run(TT('cp $BINS $path/bin/', self.args))
 
 class NutCracker(Base):
-    def __init__(self, host, port, path, cluster_name, masters, mbuf=512, verbose=5, is_redis=True, redis_auth=None):
+    def __init__(self, host, port, path, cluster_name, masters, mbuf=512,
+            verbose=5, is_redis=True, redis_auth=None):
         Base.__init__(self, 'nutcracker', host, port, path)
 
         self.masters = masters
@@ -218,8 +227,11 @@ class NutCracker(Base):
         self.args['logfile']     = TT('$path/log/nutcracker.log', self.args)
         self.args['status_port'] = self.args['port'] + 1000
 
-        self.args['startcmd']    = TT('bin/nutcracker -d -c $conf -o $logfile -p $pidfile -s $status_port -v $verbose -m $mbuf -i 1', self.args)
-        self.args['runcmd']      = TT('bin/nutcracker -d -c $conf -o $logfile -p $pidfile -s $status_port', self.args)
+        self.args['startcmd'] = TTCMD('bin/nutcracker -d -c $conf -o $logfile \
+                                       -p $pidfile -s $status_port            \
+                                       -v $verbose -m $mbuf -i 1', self.args)
+        self.args['runcmd']   = TTCMD('bin/nutcracker -d -c $conf -o $logfile \
+                                       -p $pidfile -s $status_port', self.args)
 
         self.args['cluster_name']= cluster_name
         self.args['is_redis']= str(is_redis).lower()
@@ -250,7 +262,8 @@ $cluster_name:
   servers:
 '''
         if self.args['redis_auth']:
-            content = content.replace('redis: $is_redis', 'redis: $is_redis\r\n  redis_auth: $redis_auth')
+            content = content.replace('redis: $is_redis',
+                    'redis: $is_redis\r\n  redis_auth: $redis_auth')
         content = TT(content, self.args)
         return content + self._gen_conf_section()
 
@@ -269,10 +282,12 @@ $cluster_name:
 
     def _info_dict(self):
         try:
-            ret = telnetlib.Telnet(self.args['host'], self.args['status_port']).read_all()
+            c = telnetlib.Telnet(self.args['host'], self.args['status_port'])
+            ret = c.read_all()
             return json_decode(ret)
         except Exception, e:
-            logging.debug('--- can not get _info_dict of nutcracker, [Exception: %s]' % (e, ))
+            logging.debug('can not get _info_dict of nutcracker, \
+                          [Exception: %s]' % (e, ))
             return None
 
     def reconfig(self, masters):
@@ -297,13 +312,10 @@ $cluster_name:
     def reload(self):
         self.signal('USR1')
 
-
     def set_config(self, content):
         fout = open(TT('$path/conf/nutcracker.conf', self.args), 'w+')
         fout.write(content)
         fout.close()
 
         self.reload()
-
-# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 

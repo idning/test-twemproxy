@@ -1,17 +1,20 @@
+
+NOSE=nosetests --nologcapture -x 
+
 all:
-	nosetests --nocapture  --nologcapture -v
+	$(NOSE) -v
 	
 debug:
-	export NC_VERBOSE=9; nosetests --nocapture  --nologcapture -v
+	export T_VERBOSE=9; $(NOSE) -v
 
 large:
-	export NC_LARGE=10000; nosetests --nocapture  --nologcapture -v
+	export T_LARGE=10000; $(NOSE)
 
 one:
-	nosetests --nocapture --nologcapture -v test_redis/test_del.py:test_multi_delete_20140525
+	$(NOSE) test_redis/test_del.py:test_multi_delete_20140525
 
 wait:
-	nosetests --nocapture --nologcapture -v test_redis/test_basic.py:setup_and_wait
+	$(NOSE) -v test_redis/test_basic.py:setup_and_wait
 
 clean:
 	find . -name '*.pyc' | xargs rm -f
